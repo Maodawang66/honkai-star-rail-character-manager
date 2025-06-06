@@ -37,7 +37,7 @@ venv.bak/
 *~
 
 # 数据库文件
-*.db
+# *.db  # 注释掉，允许benkai.db被同步
 *.sqlite
 *.sqlite3
 
