@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h2>注册</h2>
+            <form id="registerForm">
+                <div class="input-group">
+                    <input type="text" id="username" required placeholder="用户名">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" required placeholder="密码">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" required placeholder="确认密码">
+                </div>
+                <div class="input-group">
+                    <select id="userType" required>
+                        <option value="">请选择用户类型</option>
+                        <option value="玩家">玩家</option>
+                        <option value="策划">策划</option>
+                    </select>
+                </div>
+                <div class="input-group" id="keyGroup" style="display: none;">
+                    <input type="password" id="key" placeholder="策划密钥">
+                </div>
+                <button type="submit">注册</button>
+            </form>
+            <p>已有账号？<a href="login.html">立即登录</a></p>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+</body>
+</html> 

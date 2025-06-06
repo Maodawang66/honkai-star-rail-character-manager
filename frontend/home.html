@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>玩家主页 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>欢迎来到崩坏星穹铁道角色管理系统</h2>
+        <div id="user-info">
+            <span>当前用户：<span id="username"></span></span>
+            <button onclick="logout()">退出登录</button>
+        </div>
+        <div class="nav">
+            <a href="player_character_manage.html">信息维护</a>
+            <a href="player_data_query.html">信息查询</a>
+            <a href="team_recommendation.html">阵容推荐</a>
+        </div>
+        <div class="main-content">
+            <p>感谢您的使用！</p>
+        </div>
+    </div>
+    
+    <script>
+        // 页面加载时显示用户名
+        window.onload = function() {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                if (user && user.user && user.user.username) {
+                    document.getElementById('username').textContent = user.user.username;
+                }
+            }
+        };
+    </script>
+</body>
+</html> 

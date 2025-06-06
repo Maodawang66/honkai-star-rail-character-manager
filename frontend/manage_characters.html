@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>崩坏星穹铁道角色管理系统</h1>
+            <div class="user-info">
+                <span id="username"></span>
+                <button onclick="logout()">退出登录</button>
+            </div>
+        </div>
+        <div class="content">
+            <div class="action-buttons">
+                <button onclick="showAddModal()">添加角色</button>
+                <button onclick="showEditModal()">修改角色</button>
+                <button onclick="showDeleteModal()">删除角色</button>
+            </div>
+            <div class="character-list" id="characterList">
+                <!-- 角色列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加角色弹窗 -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h2>添加角色</h2>
+            <form id="add-form">
+                <div class="input-group">
+                    <input type="text" id="a_name" required placeholder="角色名称">
+                </div>
+                <div class="input-group">
+                    <textarea id="a_description" placeholder="角色描述"></textarea>
+                </div>
+                <div class="input-group">
+                    <select id="a_camp" required>
+                        <option value="">选择阵营</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select id="a_attribute" required>
+                        <option value="">选择属性</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select id="a_fate" required>
+                        <option value="">选择命途</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <textarea id="a_skill" placeholder="技能描述"></textarea>
+                </div>
+                <button type="submit">添加</button>
+            </form>
+            <button onclick="closeAddModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 修改角色弹窗 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2>修改角色</h2>
+            <form id="edit-form">
+                <div class="input-group">
+                    <input type="text" id="e_name" required placeholder="角色名称">
+                </div>
+                <div class="input-group">
+                    <textarea id="e_description" placeholder="角色描述"></textarea>
+                </div>
+                <div class="input-group">
+                    <select id="e_camp" required>
+                        <option value="">选择阵营</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select id="e_attribute" required>
+                        <option value="">选择属性</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select id="e_fate" required>
+                        <option value="">选择命途</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <textarea id="e_skill" placeholder="技能描述"></textarea>
+                </div>
+                <button type="submit">保存</button>
+            </form>
+            <button onclick="closeEditModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 删除角色弹窗 -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <h2>删除角色</h2>
+            <form id="delete-form">
+                <div class="input-group">
+                    <input type="text" id="d_name" required placeholder="角色名称">
+                    <div id="d_autocomplete" class="autocomplete"></div>
+                </div>
+                <button type="submit">删除</button>
+            </form>
+            <button onclick="closeDeleteModal()">关闭</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/manage.js"></script>
+</body>
+</html> 

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色查询 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>崩坏星穹铁道角色管理系统</h1>
+            <div class="user-info">
+                <span id="username"></span>
+                <button onclick="logout()">退出登录</button>
+            </div>
+        </div>
+        <div class="content">
+            <div class="query-section">
+                <h2>角色查询</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="输入角色名称、阵营、属性或命途">
+                    <button onclick="searchCharacters()">搜索</button>
+                </div>
+                <div class="filter-options">
+                    <select id="campFilter">
+                        <option value="">所有阵营</option>
+                    </select>
+                    <select id="attributeFilter">
+                        <option value="">所有属性</option>
+                    </select>
+                    <select id="fateFilter">
+                        <option value="">所有命途</option>
+                    </select>
+                </div>
+                <div id="character-list">
+                    <!-- 角色列表将在这里显示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/character_query.js"></script>
+</body>
+</html> 

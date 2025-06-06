@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智能推荐 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        .main-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #1565c0;
+            margin: 30px 0 24px 0;
+            text-align: left;
+            letter-spacing: 2px;
+        }
+        .container {
+            width: calc(100% - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 32px 32px 32px;
+        }
+        .module-block {
+            width: 100%;
+            margin-bottom: 36px;
+        }
+        .module-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 20px 0 16px 0;
+            text-align: left;
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding-left: 0;
+            flex-wrap: wrap;
+        }
+        .form-row button {
+            font-size: 1.3em;
+            padding: 16px 28px;
+            border-radius: 8px;
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            height: 60px;
+            min-width: 280px;
+            white-space: nowrap;
+        }
+        .form-row button:hover {
+            background: #1976d2;
+        }
+        .form-row button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #2196f3;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link:hover {
+            color: #1976d2;
+        }
+        .hint {
+            font-size: 1.0em;
+            color: #666;
+            margin-left: 10px;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+        .analysis-card {
+            background: white;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .analysis-card h4 {
+            margin: 0 0 15px 0;
+            color: #1565c0;
+            font-size: 1.3em;
+        }
+        .analysis-card p {
+            margin: 8px 0;
+            color: #333;
+            font-size: 1.0em;
+            line-height: 1.5;
+        }
+        .recommendation-result {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .recommendation-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #1565c0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .recommendation-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        .recommendation-item strong {
+            color: #1976d2;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2196f3;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            padding: 40px;
+        }
+        .loading::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <a href="planner_home.html" class="back-link">← 返回策划管理</a>
+        <div class="main-title">智能推荐系统</div>
+        
+        <!-- 分析控制区块 -->
+        <div class="module-block" id="analysis-control-block">
+            <div class="module-title">角色设计智能分析</div>
+            <div class="form-row">
+                <button type="button" onclick="performAnalysis()">开始分析</button>
+                <span class="hint">系统将分析当前角色分布情况，并使用机器学习算法推荐最佳新角色设计</span>
+            </div>
+        </div>
+
+        <!-- 分析结果显示区域 -->
+        <div id="analysis-results" class="result-section" style="display: none;">
+            <h3>分析结果</h3>
+            <div id="analysis-content"></div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            checkAuth();
+        };
+
+        async function performAnalysis() {
+            const button = document.querySelector('button[onclick="performAnalysis()"]');
+            const resultsDiv = document.getElementById('analysis-results');
+            const contentDiv = document.getElementById('analysis-content');
+            
+            // 显示加载状态
+            button.disabled = true;
+            button.textContent = '分析中...';
+            contentDiv.innerHTML = '<div class="loading">正在进行数据分析和机器学习计算，请稍候</div>';
+            resultsDiv.style.display = 'block';
+            
+            try {
+                // 调用后端分析API
+                const response = await fetch('http://localhost:5000/api/intelligent-analysis');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayAnalysisResults(data);
+                } else {
+                    contentDiv.innerHTML = `<div class="analysis-card"><h4>分析失败</h4><p>${data.error || '未知错误'}</p></div>`;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="analysis-card"><h4>分析失败</h4><p>网络错误: ${error.message}</p></div>`;
+            } finally {
+                button.disabled = false;
+                button.textContent = '开始分析';
+            }
+        }
+
+        function displayAnalysisResults(data) {
+            const contentDiv = document.getElementById('analysis-content');
+            
+            let html = '';
+            
+            // 1. 属性命途分布分析
+            if (data.distribution_analysis) {
+                html += `
+                    <div class="analysis-card">
+                        <h4>📊 角色属性-命途分布分析</h4>
+                        <p><strong>总体统计：</strong></p>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${data.distribution_analysis.total_characters}</div>
+                                <div class="stat-label">总角色数</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${data.distribution_analysis.total_combinations}</div>
+                                <div class="stat-label">总组合数</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${data.distribution_analysis.empty_combinations}</div>
+                                <div class="stat-label">空缺组合</div>
+                            </div>
+                        </div>
+                `;
+                
+                if (data.distribution_analysis.least_used && data.distribution_analysis.least_used.length > 0) {
+                    html += `
+                        <p><strong>📈 推荐优先设计的属性-命途组合（角色数量较少）：</strong></p>
+                    `;
+                    data.distribution_analysis.least_used.forEach(combo => {
+                        html += `<p>• ${combo.attribute_name} + ${combo.fate_name} (当前：${combo.count}个角色)</p>`;
+                    });
+                }
+                
+                if (data.distribution_analysis.most_used && data.distribution_analysis.most_used.length > 0) {
+                    html += `
+                        <p><strong>📉 建议避免的属性-命途组合（角色数量过多）：</strong></p>
+                    `;
+                    data.distribution_analysis.most_used.forEach(combo => {
+                        html += `<p>• ${combo.attribute_name} + ${combo.fate_name} (当前：${combo.count}个角色)</p>`;
+                    });
+                }
+                
+                html += '</div>';
+            }
+            
+            // 2. 机器学习分析结果
+            if (data.ml_analysis) {
+                html += `
+                    <div class="analysis-card">
+                        <h4>🤖 机器学习分析结果</h4>
+                        <p><strong>模型性能：</strong></p>
+                        <div class="stats-grid">
+                `;
+                
+                if (data.ml_analysis.ownership_model) {
+                    html += `
+                        <div class="stat-item">
+                            <div class="stat-value">${(data.ml_analysis.ownership_model.score * 100).toFixed(1)}%</div>
+                            <div class="stat-label">持有率预测准确度</div>
+                        </div>
+                    `;
+                }
+                
+                if (data.ml_analysis.favor_model) {
+                    html += `
+                        <div class="stat-item">
+                            <div class="stat-value">${(data.ml_analysis.favor_model.score * 100).toFixed(1)}%</div>
+                            <div class="stat-label">好感度预测准确度</div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                
+                if (data.ml_analysis.feature_importance) {
+                    html += `
+                        <p><strong>🎯 影响角色受欢迎程度的关键因素（按重要性排序）：</strong></p>
+                    `;
+                    data.ml_analysis.feature_importance.forEach((feature, index) => {
+                        html += `<p>${index + 1}. ${feature.feature}: ${(feature.importance * 100).toFixed(1)}%</p>`;
+                    });
+                }
+                
+                html += '</div>';
+            }
+            
+            // 3. 综合推荐结果
+            if (data.final_recommendation) {
+                html += `
+                    <div class="recommendation-result">
+                        <div class="recommendation-title">🎨 新角色设计推荐</div>
+                `;
+                
+                if (data.final_recommendation.recommended_attribute && data.final_recommendation.recommended_fate) {
+                    html += `
+                        <div class="recommendation-item">
+                            <strong>推荐属性：</strong> ${data.final_recommendation.recommended_attribute}
+                        </div>
+                        <div class="recommendation-item">
+                            <strong>推荐命途：</strong> ${data.final_recommendation.recommended_fate}
+                        </div>
+                    `;
+                }
+                
+                if (data.final_recommendation.recommended_camp) {
+                    html += `
+                        <div class="recommendation-item">
+                            <strong>推荐阵营：</strong> ${data.final_recommendation.recommended_camp}
+                        </div>
+                    `;
+                }
+                
+                if (data.final_recommendation.reasoning) {
+                    html += `
+                        <div class="recommendation-item">
+                            <strong>推荐理由：</strong> ${data.final_recommendation.reasoning}
+                        </div>
+                    `;
+                }
+                
+                if (data.final_recommendation.predicted_metrics) {
+                    html += `
+                        <div class="recommendation-item">
+                            <strong>预期表现：</strong>
+                            <div class="stats-grid" style="margin-top: 10px;">
+                    `;
+                    
+                    if (data.final_recommendation.predicted_metrics.ownership_rate !== undefined) {
+                        html += `
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.final_recommendation.predicted_metrics.ownership_rate * 100).toFixed(1)}%</div>
+                                <div class="stat-label">预期持有率</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (data.final_recommendation.predicted_metrics.avg_favor !== undefined) {
+                        html += `
+                            <div class="stat-item">
+                                <div class="stat-value">${data.final_recommendation.predicted_metrics.avg_favor.toFixed(1)}</div>
+                                <div class="stat-label">预期平均好感度</div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            contentDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>阵容推荐 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        .main-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #1565c0;
+            margin: 30px 0 24px 0;
+            text-align: left;
+            letter-spacing: 2px;
+        }
+        .container {
+            width: calc(100% - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 32px 32px 32px;
+        }
+        .module-block {
+            width: 100%;
+            margin-bottom: 36px;
+        }
+        .module-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 20px 0 16px 0;
+            text-align: left;
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding-left: 0;
+            flex-wrap: wrap;
+        }
+        .form-row select,
+        .form-row button {
+            font-size: 1.3em;
+            padding: 16px 24px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 320px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+        .form-row button {
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            min-width: 280px;
+            white-space: nowrap;
+        }
+        .form-row button:hover {
+            background: #1976d2;
+        }
+        .form-row button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #2196f3;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link:hover {
+            color: #1976d2;
+        }
+        .hint {
+            font-size: 1.0em;
+            color: #666;
+            margin-left: 10px;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .recommendation-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .priority-badge {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #2196f3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .character-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .character-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 1em;
+        }
+        
+        .detail-item {
+            color: #555;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .tags {
+            margin-top: 10px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            border: 1px solid #bbdefb;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            padding: 40px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            padding: 20px;
+        }
+    </style>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <a href="home.html" class="back-link">← 返回主页</a>
+        <div class="main-title">阵容推荐</div>
+        
+        <!-- 阵容推荐区块 -->
+        <div class="module-block" id="team-recommendation-block">
+            <div class="module-title">智能阵容推荐</div>
+            <div class="form-row">
+                <select id="boss-select">
+                    <option value="">请选择BOSS</option>
+                </select>
+                <select id="environment-select">
+                    <option value="">请选择环境</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <button type="button" onclick="getRecommendation()">获取推荐阵容</button>
+                <span class="hint">请同时选择BOSS和环境，系统将综合分析给出最佳阵容推荐</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐结果弹窗 -->
+    <div id="recommendation-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">推荐阵容</h3>
+                <span class="close" onclick="closeRecommendationModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="recommendation-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            checkAuth();
+            loadBosses();
+            loadEnvironments();
+        };
+
+        let currentUser = null;
+
+        // 获取当前用户信息
+        function getCurrentUser() {
+            if (!currentUser) {
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            return currentUser;
+        }
+
+        // 加载BOSS列表
+        async function loadBosses() {
+            try {
+                const response = await fetch('http://localhost:5000/api/bosses');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const bossSelect = document.getElementById('boss-select');
+                    bossSelect.innerHTML = '<option value="">请选择BOSS</option>';
+                    
+                    data.forEach(boss => {
+                        const option = document.createElement('option');
+                        option.value = boss.boss_id;
+                        option.textContent = boss.name;
+                        bossSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('加载BOSS列表失败:', data.error);
+                }
+            } catch (error) {
+                console.error('加载BOSS列表失败:', error);
+            }
+        }
+
+        // 加载环境列表
+        async function loadEnvironments() {
+            try {
+                const response = await fetch('http://localhost:5000/api/environments');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const envSelect = document.getElementById('environment-select');
+                    envSelect.innerHTML = '<option value="">请选择环境</option>';
+                    
+                    data.forEach(env => {
+                        const option = document.createElement('option');
+                        option.value = env.env_id;
+                        option.textContent = env.name;
+                        envSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('加载环境列表失败:', data.error);
+                }
+            } catch (error) {
+                console.error('加载环境列表失败:', error);
+            }
+        }
+
+        // 获取综合推荐
+        async function getRecommendation() {
+            const bossId = document.getElementById('boss-select').value;
+            const envId = document.getElementById('environment-select').value;
+            
+            if (!bossId) {
+                alert('请先选择一个BOSS');
+                return;
+            }
+            
+            if (!envId) {
+                alert('请先选择一个环境');
+                return;
+            }
+
+            const user = getCurrentUser();
+            if (!user || !user.user) {
+                alert('请先登录');
+                return;
+            }
+
+            try {
+                showModal('正在计算推荐阵容...');
+                
+                const response = await fetch(`http://localhost:5000/api/recommendations/combined/${bossId}/${envId}/${user.user.user_id}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const bossName = document.getElementById('boss-select').selectedOptions[0].text;
+                    const envName = document.getElementById('environment-select').selectedOptions[0].text;
+                    document.getElementById('modal-title').textContent = `${bossName} + ${envName} 推荐阵容`;
+                    displayRecommendations(data);
+                } else {
+                    alert(data.error || '获取推荐失败');
+                    closeRecommendationModal();
+                }
+            } catch (error) {
+                alert('获取推荐失败：' + error.message);
+                closeRecommendationModal();
+            }
+        }
+
+        // 显示推荐结果
+        function displayRecommendations(recommendations) {
+            const content = document.getElementById('recommendation-content');
+            
+            if (!recommendations || recommendations.length === 0) {
+                content.innerHTML = '<div class="no-data">暂无推荐角色，请先添加一些角色到您的收藏中</div>';
+                return;
+            }
+
+            let html = '';
+            recommendations.forEach((char, index) => {
+                html += `
+                    <div class="recommendation-item">
+                        <div class="priority-badge">优先度: ${char.priority.toFixed(2)}</div>
+                        <div class="character-name">${char.character_name}</div>
+                        <div class="character-details">
+                            <div class="detail-item">
+                                <span class="detail-label">星魂：</span>${char.star_soul}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">等级：</span>${char.level}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">战力：</span>${char.power}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">好感度：</span>${char.favor}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">获得时间：</span>${char.join_time || '未知'}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">总匹配标签数：</span>${char.matched_tags || 0}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">BOSS匹配：</span>${char.boss_matched_tags || 0}个标签
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">环境匹配：</span>${char.env_matched_tags || 0}个标签
+                            </div>
+                        </div>
+                        ${char.character_tags && char.character_tags.length > 0 ? `
+                            <div class="tags">
+                                <span class="detail-label">角色标签：</span>
+                                ${char.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+
+        // 显示弹窗
+        function showModal(loadingText = null) {
+            const modal = document.getElementById('recommendation-modal');
+            const content = document.getElementById('recommendation-content');
+            
+            if (loadingText) {
+                content.innerHTML = `<div class="loading">${loadingText}</div>`;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // 关闭弹窗
+        function closeRecommendationModal() {
+            document.getElementById('recommendation-modal').style.display = 'none';
+        }
+
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('recommendation-modal');
+            if (event.target === modal) {
+                closeRecommendationModal();
+            }
+        }
+    </script>
+</body>
+</html> 

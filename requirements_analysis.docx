@@ -1,0 +1,122 @@
+崩坏星穹铁道角色管理系统——需求分析
+
+一、系统目标
+本系统面向"崩坏星穹铁道"游戏的玩家和策划，提供角色、BOSS、环境等核心数据的高效管理、查询与智能推荐服务。系统需支持多维度角色信息管理、个性化成长记录、标签化推荐与全服统计分析，满足策划与玩家的不同业务需求。
+
+二、用户与权限
+用户分为两类：玩家、策划。
+
+策划拥有全局管理权限，可维护所有角色、BOSS、环境及标签数据，并进行数据分析与推荐。
+
+玩家仅能管理和查询自己拥有的角色，并可查询全服角色、BOSS、环境等信息，参与排行榜和推荐。
+
+三、核心数据对象及属性
+1. 用户（User）：记录系统登录者的基本信息，包括用户ID、用户名、密码、用户类型（玩家/策划）。
+2. 阵营（Camp）、属性（Attribute）、命途（Fate）：作为基础数据表，分别存储所有可选的阵营、属性、命途类型，便于角色和BOSS的规范化管理和扩展。
+3. 角色（Character）：记录游戏中所有角色的固有属性，包括名称、简介、阵营、属性、命途、技能等。角色的成长性和个性化数据（如星魂、等级、战力、好感度、获得时间等）由玩家-角色表（User_Character）单独管理，实现共性与个性数据分离。
+4. 玩家-角色（User_Character）：记录每个玩家拥有的角色及其个性化成长数据，包括星魂、等级、战力、好感度、获得时间等。
+5. BOSS（Boss）：记录所有BOSS的基本信息，包括名称、简介、阵营、弱点（弱点属性通过外键关联属性表）等。
+6. 环境（Environment）：记录战斗环境的相关信息，包括环境名称、buff等。
+7. 标签（Tag）：用于对角色、BOSS、环境进行多维度分类和推荐，标签类型可区分战斗类型、打法推荐等。
+8. 多对多关系表：
+   - 角色-标签（Character_Tag）：实现角色与标签的多对多关联。
+   - BOSS-标签（Boss_Tag）：实现BOSS与标签的多对多关联。
+   - 环境-标签（Environment_Tag）：实现环境与标签的多对多关联。
+
+四、主要功能需求
+1. 策划端
+   - 维护和查询全服的角色、BOSS、环境、标签等数据。
+   - 根据已有信息推理和推荐最适合的新角色信息，辅助游戏内容设计与平衡。
+
+2. 玩家端
+   - 维护和查询自己的角色库，自动计算角色战力。
+   - 查询全服角色库（区分已获得和未获得）、BOSS库、环境库。
+   - 查询全服角色战力排行、角色持有率等统计信息。
+   - 查询当前BOSS和环境推荐的角色（基于角色战力、标签、好感度等）。
+   - 根据BOSS、环境的标签进行智能推荐。
+   - 推荐玩家抽取什么类型的新角色，辅助玩家决策。
+
+五、数据关系与推荐逻辑
+角色、BOSS、环境均可拥有多个标签，标签作为推荐和分类的核心依据。
+
+推荐逻辑通过标签的交集实现：如角色与BOSS/环境拥有相同标签，则该角色被推荐用于该BOSS/环境。
+
+阵营、属性、命途等基础属性通过外键规范化，便于后续扩展和维护。
+
+BOSS的弱点通过外键与属性表关联，保证属性体系统一。
+
+六、扩展性与安全性
+支持角色、BOSS、环境属性的进一步细化和扩展。
+
+玩家只能操作和查看自己的角色数据，策划可全局管理，保证数据安全和权限隔离。
+
+系统需支持高效的多条件查询、统计分析和智能推荐。
+
+七、总结
+本系统以角色、BOSS、环境、标签为核心，结合多维度属性和灵活的标签机制，实现了数据的规范化管理和智能推荐，满足策划和玩家的多样化需求，并具备良好的扩展性和安全性。
+
+关系模式
+1. 用户（User）
+   - user_id：用户ID，主码
+   - username：用户名
+   - password：登录密码
+   - user_type：用户类型（玩家/策划）
+
+2. 阵营（Camp）
+   - camp_id：阵营ID，主码
+   - camp_name：阵营名称
+
+3. 属性（Attribute）
+   - attribute_id：属性ID，主码
+   - attribute_name：属性名称
+
+4. 命途（Fate）
+   - fate_id：命途ID，主码
+   - fate_name：命途名称
+
+5. 角色（Character，固有属性）
+   - character_id：角色ID，主码
+   - name：角色名称
+   - description：角色简介
+   - camp_id：阵营ID，外码，参照Camp(camp_id)
+   - attribute_id：属性ID，外码，参照Attribute(attribute_id)
+   - fate_id：命途ID，外码，参照Fate(fate_id)
+   - skill：技能
+
+6. 玩家-角色（User_Character，个性属性）
+   - user_id：用户ID，主码，外码，参照User(user_id)
+   - character_id：角色ID，主码，外码，参照Character(character_id)
+   - star_soul：星魂（个性属性）
+   - level：等级
+   - power：战力
+   - join_time：获得/登场时间
+   - favor：好感度
+
+7. BOSS
+   - boss_id：BOSS ID，主码
+   - name：BOSS名称
+   - description：BOSS简介
+   - camp_id：阵营ID，外码，参照Camp(camp_id)
+   - weakness_id：弱点属性ID，外码，参照Attribute(attribute_id)
+
+8. 环境（Environment）
+   - env_id：环境ID，主码
+   - name：环境名称
+   - buff：环境buff
+
+9. 标签（Tag）
+   - tag_id：标签ID，主码
+   - name：标签名称
+   - tag_type：标签类型（如战斗类型、打法推荐等）
+
+10. 角色-标签（Character_Tag）
+    - character_id：角色ID，主码，外码，参照Character(character_id)
+    - tag_id：标签ID，主码，外码，参照Tag(tag_id)
+
+11. BOSS-标签（Boss_Tag）
+    - boss_id：BOSS ID，主码，外码，参照Boss(boss_id)
+    - tag_id：标签ID，主码，外码，参照Tag(tag_id)
+
+12. 环境-标签（Environment_Tag）
+    - env_id：环境ID，主码，外码，参照Environment(env_id)
+    - tag_id：标签ID，主码，外码，参照Tag(tag_id) 

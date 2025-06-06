@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据查询 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        .main-title {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #1565c0;
+            margin: 40px 0 32px 0;
+            text-align: left;
+            letter-spacing: 2px;
+        }
+        .container {
+            width: calc(100% - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 40px 40px 40px;
+        }
+        .module-block {
+            width: 100%;
+            margin-bottom: 48px;
+        }
+        .module-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 24px 0 18px 0;
+            text-align: left;
+        }
+        .query-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding-left: 0;
+        }
+        .query-row input[type="text"],
+        .query-row select {
+            font-size: 1.6em;
+            padding: 20px 28px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 380px;
+            height: 70px;
+            box-sizing: border-box;
+        }
+        .query-row button {
+            font-size: 1.6em;
+            padding: 20px 32px;
+            border-radius: 8px;
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            height: 70px;
+            min-width: 320px;
+            white-space: nowrap;
+        }
+        .query-row button:hover {
+            background: #1976d2;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+        .result-item {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2196f3;
+        }
+        .result-item h4 {
+            margin: 0 0 10px 0;
+            color: #1565c0;
+            font-size: 1.2em;
+        }
+        .result-item p {
+            margin: 5px 0;
+            color: #333;
+        }
+        .tags {
+            margin-top: 10px;
+        }
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: none;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            opacity: 0.7;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .ranking-table th,
+        .ranking-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .ranking-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .ranking-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .rank-number {
+            font-weight: bold;
+            color: #2196f3;
+        }
+        
+        .rank-gold {
+            color: #ffd700;
+        }
+        
+        .rank-silver {
+            color: #c0c0c0;
+        }
+        
+        .rank-bronze {
+            color: #cd7f32;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            font-size: 1.1em;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #1976d2;
+        }
+        
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        #page-info {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .ownership-rate {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2196f3;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .ownership-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .ownership-details p {
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+    </style>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="main-title">数据查询</div>
+        
+        <!-- 角色查询区块 -->
+        <div class="module-block" id="character-query-block">
+            <div class="module-title">角色查询</div>
+            <div class="query-row">
+                <input type="text" id="character-name-input" placeholder="角色名称">
+                <button type="button" onclick="queryCharacter()">查询单个角色</button>
+                <button type="button" onclick="queryAllCharacters()">查询所有角色</button>
+            </div>
+            <div id="character-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="character-content"></div>
+            </div>
+        </div>
+
+        <!-- BOSS查询区块 -->
+        <div class="module-block" id="boss-query-block">
+            <div class="module-title">BOSS查询</div>
+            <div class="query-row">
+                <input type="text" id="boss-name-input" placeholder="BOSS名称">
+                <button type="button" onclick="queryBoss()">查询单个BOSS</button>
+                <button type="button" onclick="queryAllBosses()">查询所有BOSS</button>
+            </div>
+            <div id="boss-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="boss-content"></div>
+            </div>
+        </div>
+
+        <!-- 环境查询区块 -->
+        <div class="module-block" id="environment-query-block">
+            <div class="module-title">环境查询</div>
+            <div class="query-row">
+                <input type="text" id="environment-name-input" placeholder="环境名称">
+                <button type="button" onclick="queryEnvironment()">查询单个环境</button>
+                <button type="button" onclick="queryAllEnvironments()">查询所有环境</button>
+            </div>
+            <div id="environment-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="environment-content"></div>
+            </div>
+        </div>
+
+        <!-- 属性查询区块 -->
+        <div class="module-block" id="attribute-query-block">
+            <div class="module-title">属性查询</div>
+            <div class="query-row">
+                <input type="text" id="attribute-name-input" placeholder="属性名称">
+                <button type="button" onclick="queryAttribute()">查询单个属性</button>
+                <button type="button" onclick="queryAllAttributes()">查询所有属性</button>
+            </div>
+            <div id="attribute-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="attribute-content"></div>
+            </div>
+        </div>
+
+        <!-- 命途查询区块 -->
+        <div class="module-block" id="fate-query-block">
+            <div class="module-title">命途查询</div>
+            <div class="query-row">
+                <input type="text" id="fate-name-input" placeholder="命途名称">
+                <button type="button" onclick="queryFate()">查询单个命途</button>
+                <button type="button" onclick="queryAllFates()">查询所有命途</button>
+            </div>
+            <div id="fate-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="fate-content"></div>
+            </div>
+        </div>
+
+        <!-- 阵营查询区块 -->
+        <div class="module-block" id="camp-query-block">
+            <div class="module-title">阵营查询</div>
+            <div class="query-row">
+                <input type="text" id="camp-name-input" placeholder="阵营名称">
+                <button type="button" onclick="queryCamp()">查询单个阵营</button>
+                <button type="button" onclick="queryAllCamps()">查询所有阵营</button>
+            </div>
+            <div id="camp-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="camp-content"></div>
+            </div>
+        </div>
+
+        <!-- 标签查询区块 -->
+        <div class="module-block" id="tag-query-block">
+            <div class="module-title">标签查询</div>
+            <div class="query-row">
+                <input type="text" id="tag-name-input" placeholder="标签名称">
+                <button type="button" onclick="queryTag()">查询单个标签</button>
+                <button type="button" onclick="queryAllTags()">查询所有标签</button>
+            </div>
+            <div id="tag-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="tag-content"></div>
+            </div>
+        </div>
+
+        <!-- 战力排行查询区块 -->
+        <div class="module-block" id="power-ranking-query-block">
+            <div class="module-title">全服角色战力排行</div>
+            <div class="query-row">
+                <input type="text" id="power-character-name-input" placeholder="角色名称（可选）">
+                <button type="button" onclick="queryCharacterPowerRanking()">查询指定角色战力排行</button>
+                <button type="button" onclick="queryAllPowerRanking()">查询全服战力排行</button>
+            </div>
+        </div>
+
+        <!-- 角色持有率查询区块 -->
+        <div class="module-block" id="character-ownership-query-block">
+            <div class="module-title">角色持有率查询</div>
+            <div class="query-row">
+                <input type="text" id="ownership-character-name-input" placeholder="角色名称">
+                <button type="button" onclick="queryCharacterOwnership()">查询角色持有率</button>
+            </div>
+            <div id="ownership-results" class="result-section" style="display: none;">
+                <h3>查询结果</h3>
+                <div id="ownership-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 战力排行弹窗 -->
+    <div id="power-ranking-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">战力排行榜</h3>
+                <span class="close" onclick="closePowerRankingModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="ranking-content"></div>
+                <div class="pagination">
+                    <button id="prev-page" onclick="changePage(-1)" disabled>上一页</button>
+                    <span id="page-info">第 1 页</span>
+                    <button id="next-page" onclick="changePage(1)">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+window.onload = function() {
+    // 检查用户登录状态（可选，如果需要的话）
+};
+
+// 角色查询功能
+async function queryCharacter() {
+    const name = document.getElementById('character-name-input').value.trim();
+    if (!name) {
+        alert('请输入角色名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/characters/detail/${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayCharacterResults([data]);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllCharacters() {
+    try {
+        const response = await fetch('http://localhost:5000/api/characters/detail');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayCharacterResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayCharacterResults(characters) {
+    const resultsDiv = document.getElementById('character-results');
+    const contentDiv = document.getElementById('character-content');
+    
+    if (characters.length === 0) {
+        contentDiv.innerHTML = '<p>未找到角色数据</p>';
+    } else {
+        contentDiv.innerHTML = characters.map(char => `
+            <div class="result-item">
+                <h4>${char.name}</h4>
+                <p><strong>简介：</strong>${char.description || '无'}</p>
+                <p><strong>技能：</strong>${char.skill || '无'}</p>
+                <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
+                <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
+                <p><strong>命途：</strong>${char.fate_name || '无'}</p>
+                <div class="tags">
+                    <strong>标签：</strong>
+                    ${char.tags && char.tags.length > 0 ? 
+                        char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                        '<span>无</span>'
+                    }
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// BOSS查询功能
+async function queryBoss() {
+    const name = document.getElementById('boss-name-input').value.trim();
+    if (!name) {
+        alert('请输入BOSS名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/bosses/detail/${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayBossResults([data]);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllBosses() {
+    try {
+        const response = await fetch('http://localhost:5000/api/bosses/detail');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayBossResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayBossResults(bosses) {
+    const resultsDiv = document.getElementById('boss-results');
+    const contentDiv = document.getElementById('boss-content');
+    
+    if (bosses.length === 0) {
+        contentDiv.innerHTML = '<p>未找到BOSS数据</p>';
+    } else {
+        contentDiv.innerHTML = bosses.map(boss => `
+            <div class="result-item">
+                <h4>${boss.name}</h4>
+                <p><strong>简介：</strong>${boss.description || '无'}</p>
+                <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
+                <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
+                <div class="tags">
+                    <strong>标签：</strong>
+                    ${boss.tags && boss.tags.length > 0 ? 
+                        boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                        '<span>无</span>'
+                    }
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 环境查询功能
+async function queryEnvironment() {
+    const name = document.getElementById('environment-name-input').value.trim();
+    if (!name) {
+        alert('请输入环境名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/environments/detail/${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayEnvironmentResults([data]);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllEnvironments() {
+    try {
+        const response = await fetch('http://localhost:5000/api/environments/detail');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayEnvironmentResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayEnvironmentResults(environments) {
+    const resultsDiv = document.getElementById('environment-results');
+    const contentDiv = document.getElementById('environment-content');
+    
+    if (environments.length === 0) {
+        contentDiv.innerHTML = '<p>未找到环境数据</p>';
+    } else {
+        contentDiv.innerHTML = environments.map(env => `
+            <div class="result-item">
+                <h4>${env.name}</h4>
+                <p><strong>buff效果：</strong>${env.buff || '无'}</p>
+                <div class="tags">
+                    <strong>标签：</strong>
+                    ${env.tags && env.tags.length > 0 ? 
+                        env.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                        '<span>无</span>'
+                    }
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 属性查询功能
+async function queryAttribute() {
+    const name = document.getElementById('attribute-name-input').value.trim();
+    if (!name) {
+        alert('请输入属性名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/attributes?name=${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayAttributeResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllAttributes() {
+    try {
+        const response = await fetch('http://localhost:5000/api/attributes');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayAttributeResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayAttributeResults(attributes) {
+    const resultsDiv = document.getElementById('attribute-results');
+    const contentDiv = document.getElementById('attribute-content');
+    
+    if (attributes.length === 0) {
+        contentDiv.innerHTML = '<p>未找到属性数据</p>';
+    } else {
+        contentDiv.innerHTML = attributes.map(attr => `
+            <div class="result-item">
+                <h4>${attr.attribute_name}</h4>
+                <p><strong>属性ID：</strong>${attr.attribute_id}</p>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 命途查询功能
+async function queryFate() {
+    const name = document.getElementById('fate-name-input').value.trim();
+    if (!name) {
+        alert('请输入命途名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/fates?name=${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayFateResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllFates() {
+    try {
+        const response = await fetch('http://localhost:5000/api/fates');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayFateResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayFateResults(fates) {
+    const resultsDiv = document.getElementById('fate-results');
+    const contentDiv = document.getElementById('fate-content');
+    
+    if (fates.length === 0) {
+        contentDiv.innerHTML = '<p>未找到命途数据</p>';
+    } else {
+        contentDiv.innerHTML = fates.map(fate => `
+            <div class="result-item">
+                <h4>${fate.fate_name}</h4>
+                <p><strong>命途ID：</strong>${fate.fate_id}</p>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 阵营查询功能
+async function queryCamp() {
+    const name = document.getElementById('camp-name-input').value.trim();
+    if (!name) {
+        alert('请输入阵营名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/camps?name=${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayCampResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllCamps() {
+    try {
+        const response = await fetch('http://localhost:5000/api/camps');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayCampResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayCampResults(camps) {
+    const resultsDiv = document.getElementById('camp-results');
+    const contentDiv = document.getElementById('camp-content');
+    
+    if (camps.length === 0) {
+        contentDiv.innerHTML = '<p>未找到阵营数据</p>';
+    } else {
+        contentDiv.innerHTML = camps.map(camp => `
+            <div class="result-item">
+                <h4>${camp.camp_name}</h4>
+                <p><strong>阵营ID：</strong>${camp.camp_id}</p>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 标签查询功能
+async function queryTag() {
+    const name = document.getElementById('tag-name-input').value.trim();
+    if (!name) {
+        alert('请输入标签名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/tags?name=${encodeURIComponent(name)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayTagResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllTags() {
+    try {
+        const response = await fetch('http://localhost:5000/api/tags');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayTagResults(data);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayTagResults(tags) {
+    const resultsDiv = document.getElementById('tag-results');
+    const contentDiv = document.getElementById('tag-content');
+    
+    if (tags.length === 0) {
+        contentDiv.innerHTML = '<p>未找到标签数据</p>';
+    } else {
+        contentDiv.innerHTML = tags.map(tag => `
+            <div class="result-item">
+                <h4>${tag.name}</h4>
+                <p><strong>标签ID：</strong>${tag.tag_id}</p>
+            </div>
+        `).join('');
+    }
+    
+    resultsDiv.style.display = 'block';
+}
+
+// 战力排行查询功能
+let currentRankingData = [];
+let currentPage = 1;
+const pageSize = 10;
+
+async function queryCharacterPowerRanking() {
+    const characterName = document.getElementById('power-character-name-input').value.trim();
+    if (!characterName) {
+        alert('请输入角色名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/power-ranking/character/${encodeURIComponent(characterName)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentRankingData = data;
+            currentPage = 1;
+            document.getElementById('modal-title').textContent = `${characterName} 战力排行榜`;
+            displayRankingModal();
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+async function queryAllPowerRanking() {
+    try {
+        const response = await fetch('http://localhost:5000/api/power-ranking/all');
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentRankingData = data;
+            currentPage = 1;
+            document.getElementById('modal-title').textContent = '全服战力排行榜';
+            displayRankingModal();
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayRankingModal() {
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
+    
+    if (currentRankingData.length === 0) {
+        content.innerHTML = '<p>暂无排行数据</p>';
+        updatePagination();
+        modal.style.display = 'block';
+        return;
+    }
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, currentRankingData.length);
+    const pageData = currentRankingData.slice(startIndex, endIndex);
+    
+    let tableHTML = `
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>用户名</th>
+                    <th>角色名称</th>
+                    <th>战力</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    pageData.forEach((item, index) => {
+        const rank = startIndex + index + 1;
+        let rankClass = 'rank-number';
+        if (rank === 1) rankClass += ' rank-gold';
+        else if (rank === 2) rankClass += ' rank-silver';
+        else if (rank === 3) rankClass += ' rank-bronze';
+        
+        tableHTML += `
+            <tr>
+                <td class="${rankClass}">${rank}</td>
+                <td>${item.username || '未知用户'}</td>
+                <td>${item.character_name}</td>
+                <td>${item.power_value}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += '</tbody></table>';
+    content.innerHTML = tableHTML;
+    
+    updatePagination();
+    modal.style.display = 'block';
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(currentRankingData.length / pageSize);
+    document.getElementById('page-info').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+    document.getElementById('prev-page').disabled = currentPage <= 1;
+    document.getElementById('next-page').disabled = currentPage >= totalPages;
+}
+
+function changePage(direction) {
+    const totalPages = Math.ceil(currentRankingData.length / pageSize);
+    const newPage = currentPage + direction;
+    
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        displayRankingModal();
+    }
+}
+
+function closePowerRankingModal() {
+    document.getElementById('power-ranking-modal').style.display = 'none';
+}
+
+// 点击弹窗外部关闭
+window.onclick = function(event) {
+    const modal = document.getElementById('power-ranking-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 角色持有率查询功能
+async function queryCharacterOwnership() {
+    const characterName = document.getElementById('ownership-character-name-input').value.trim();
+    if (!characterName) {
+        alert('请输入角色名称');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/character-ownership/${encodeURIComponent(characterName)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayOwnershipResults(data, characterName);
+        } else {
+            alert(data.error || '查询失败');
+        }
+    } catch (error) {
+        alert('查询失败：' + error.message);
+    }
+}
+
+function displayOwnershipResults(data, characterName) {
+    const resultsDiv = document.getElementById('ownership-results');
+    const contentDiv = document.getElementById('ownership-content');
+    
+    const ownershipRate = ((data.owners / data.total_players) * 100).toFixed(2);
+    
+    contentDiv.innerHTML = `
+        <div class="result-item">
+            <h4>${characterName} 持有率统计</h4>
+            <div class="ownership-rate">${ownershipRate}%</div>
+            <div class="ownership-details">
+                <p><strong>拥有该角色的玩家数：</strong>${data.owners} 人</p>
+                <p><strong>总玩家数：</strong>${data.total_players} 人</p>
+                <p><strong>持有率：</strong>${ownershipRate}% (${data.owners}/${data.total_players})</p>
+            </div>
+        </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+}
+    </script>
+</body>
+</html> 
