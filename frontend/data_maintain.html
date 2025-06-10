@@ -398,8 +398,10 @@ addFateForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！命途已添加到数据库');
         addFateForm.reset();
+        // 显示当前所有命途确认添加成功
+        showAllFates();
     } else {
         alert(data.error || '添加失败');
     }
@@ -414,8 +416,10 @@ async function deleteFate() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！命途已从数据库中删除');
         document.getElementById('delete-fate-name').value = '';
+        // 显示当前所有命途确认删除成功
+        showAllFates();
     } else {
         alert(data.error || '删除失败');
     }
@@ -430,6 +434,91 @@ function closeEditFateModal() {
     document.getElementById('edit-fate-modal').style.display = 'none';
     document.getElementById('edit-fate-form').reset();
 }
+// 显示所有数据的通用函数
+async function showAllFates() {
+    try {
+        const response = await fetch('http://localhost:5000/api/fates');
+        const fates = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有命途：', fates);
+        }
+    } catch (error) {
+        console.error('获取命途列表失败:', error);
+    }
+}
+
+async function showAllAttributes() {
+    try {
+        const response = await fetch('http://localhost:5000/api/attributes');
+        const attributes = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有属性：', attributes);
+        }
+    } catch (error) {
+        console.error('获取属性列表失败:', error);
+    }
+}
+
+async function showAllCamps() {
+    try {
+        const response = await fetch('http://localhost:5000/api/camps');
+        const camps = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有阵营：', camps);
+        }
+    } catch (error) {
+        console.error('获取阵营列表失败:', error);
+    }
+}
+
+async function showAllTags() {
+    try {
+        const response = await fetch('http://localhost:5000/api/tags');
+        const tags = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有标签：', tags);
+        }
+    } catch (error) {
+        console.error('获取标签列表失败:', error);
+    }
+}
+
+async function showAllBosses() {
+    try {
+        const response = await fetch('http://localhost:5000/api/bosses');
+        const bosses = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有BOSS：', bosses);
+        }
+    } catch (error) {
+        console.error('获取BOSS列表失败:', error);
+    }
+}
+
+async function showAllEnvironments() {
+    try {
+        const response = await fetch('http://localhost:5000/api/environments');
+        const envs = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有环境：', envs);
+        }
+    } catch (error) {
+        console.error('获取环境列表失败:', error);
+    }
+}
+
+async function showAllCharacters() {
+    try {
+        const response = await fetch('http://localhost:5000/api/characters');
+        const characters = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有角色：', characters);
+        }
+    } catch (error) {
+        console.error('获取角色列表失败:', error);
+    }
+}
+
 // 修改命途
 const editFateForm = document.getElementById('edit-fate-form');
 editFateForm.onsubmit = async function(e) {
@@ -444,9 +533,11 @@ editFateForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！命途已在数据库中更新');
         closeEditFateModal();
         document.getElementById('edit-fate-old').value = '';
+        // 显示当前所有命途确认修改成功
+        showAllFates();
     } else {
         alert(data.error || '修改失败');
     }
@@ -465,8 +556,9 @@ addAttributeForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！属性已添加到数据库');
         addAttributeForm.reset();
+        showAllAttributes();
     } else {
         alert(data.error || '添加失败');
     }
@@ -481,8 +573,9 @@ async function deleteAttribute() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！属性已从数据库中删除');
         document.getElementById('delete-attribute-name').value = '';
+        showAllAttributes();
     } else {
         alert(data.error || '删除失败');
     }
@@ -511,9 +604,10 @@ editAttributeForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！属性已在数据库中更新');
         closeEditAttributeModal();
         document.getElementById('edit-attribute-old').value = '';
+        showAllAttributes();
     } else {
         alert(data.error || '修改失败');
     }
@@ -532,8 +626,9 @@ addCampForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！阵营已添加到数据库');
         addCampForm.reset();
+        showAllCamps();
     } else {
         alert(data.error || '添加失败');
     }
@@ -548,8 +643,9 @@ async function deleteCamp() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！阵营已从数据库中删除');
         document.getElementById('delete-camp-name').value = '';
+        showAllCamps();
     } else {
         alert(data.error || '删除失败');
     }
@@ -578,9 +674,10 @@ editCampForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！阵营已在数据库中更新');
         closeEditCampModal();
         document.getElementById('edit-camp-old').value = '';
+        showAllCamps();
     } else {
         alert(data.error || '修改失败');
     }
@@ -599,8 +696,9 @@ addTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！标签已添加到数据库');
         addTagForm.reset();
+        showAllTags();
     } else {
         alert(data.error || '添加失败');
     }
@@ -615,8 +713,9 @@ async function deleteTag() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！标签已从数据库中删除');
         document.getElementById('delete-tag-name').value = '';
+        showAllTags();
     } else {
         alert(data.error || '删除失败');
     }
@@ -645,9 +744,10 @@ editTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！标签已在数据库中更新');
         closeEditTagModal();
         document.getElementById('edit-tag-old').value = '';
+        showAllTags();
     } else {
         alert(data.error || '修改失败');
     }
@@ -688,8 +788,9 @@ addBossForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！BOSS已添加到数据库');
         addBossForm.reset();
+        showAllBosses();
     } else {
         alert(data.error || '添加失败');
     }
@@ -704,8 +805,9 @@ async function deleteBoss() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！BOSS已从数据库中删除');
         document.getElementById('delete-boss-name').value = '';
+        showAllBosses();
     } else {
         alert(data.error || '删除失败');
     }
@@ -737,9 +839,10 @@ editBossForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！BOSS已在数据库中更新');
         closeEditBossModal();
         document.getElementById('edit-boss-old').value = '';
+        showAllBosses();
     } else {
         alert(data.error || '修改失败');
     }
@@ -759,8 +862,9 @@ addEnvForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！环境已添加到数据库');
         addEnvForm.reset();
+        showAllEnvironments();
     } else {
         alert(data.error || '添加失败');
     }
@@ -775,8 +879,9 @@ async function deleteEnv() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！环境已从数据库中删除');
         document.getElementById('delete-env-name').value = '';
+        showAllEnvironments();
     } else {
         alert(data.error || '删除失败');
     }
@@ -806,9 +911,10 @@ editEnvForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！环境已在数据库中更新');
         closeEditEnvModal();
         document.getElementById('edit-env-old').value = '';
+        showAllEnvironments();
     } else {
         alert(data.error || '修改失败');
     }
@@ -850,8 +956,9 @@ addCharacterForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！角色已添加到数据库');
         addCharacterForm.reset();
+        showAllCharacters();
     } else {
         alert(data.error || '添加失败');
     }
@@ -866,8 +973,9 @@ async function deleteCharacter() {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！角色已从数据库中删除');
         document.getElementById('delete-character-name').value = '';
+        showAllCharacters();
     } else {
         alert(data.error || '删除失败');
     }
@@ -901,9 +1009,10 @@ editCharacterForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('修改成功');
+        alert('修改成功！角色已在数据库中更新');
         closeEditCharacterModal();
         document.getElementById('edit-character-old').value = '';
+        showAllCharacters();
     } else {
         alert(data.error || '修改失败');
     }
@@ -938,8 +1047,9 @@ addCharacterTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！角色标签关联已添加到数据库');
         addCharacterTagForm.reset();
+        console.log('角色标签关联操作完成');
     } else {
         alert(data.error || '添加失败');
     }
@@ -958,8 +1068,9 @@ deleteCharacterTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！角色标签关联已从数据库中删除');
         deleteCharacterTagForm.reset();
+        console.log('角色标签关联删除完成');
     } else {
         alert(data.error || '删除失败');
     }
@@ -993,8 +1104,9 @@ addEnvTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！环境标签关联已添加到数据库');
         addEnvTagForm.reset();
+        console.log('环境标签关联操作完成');
     } else {
         alert(data.error || '添加失败');
     }
@@ -1013,8 +1125,9 @@ deleteEnvTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！环境标签关联已从数据库中删除');
         deleteEnvTagForm.reset();
+        console.log('环境标签关联删除完成');
     } else {
         alert(data.error || '删除失败');
     }
@@ -1048,8 +1161,9 @@ addBossTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('添加成功');
+        alert('添加成功！BOSS标签关联已添加到数据库');
         addBossTagForm.reset();
+        console.log('BOSS标签关联操作完成');
     } else {
         alert(data.error || '添加失败');
     }
@@ -1068,8 +1182,9 @@ deleteBossTagForm.onsubmit = async function(e) {
     });
     const data = await res.json();
     if (res.ok) {
-        alert('删除成功');
+        alert('删除成功！BOSS标签关联已从数据库中删除');
         deleteBossTagForm.reset();
+        console.log('BOSS标签关联删除完成');
     } else {
         alert(data.error || '删除失败');
     }
