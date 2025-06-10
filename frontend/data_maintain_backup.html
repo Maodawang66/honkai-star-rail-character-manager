@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据维护 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        .main-title {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #1565c0;
+            margin: 40px 0 32px 0;
+            text-align: left;
+            letter-spacing: 2px;
+        }
+        .container {
+            width: calc(100% - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 40px 40px 40px;
+        }
+        .module-block {
+            width: 100%;
+            margin-bottom: 48px;
+        }
+        .module-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 24px 0 18px 0;
+            text-align: left;
+        }
+        .module-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding-left: 0;
+        }
+        .module-row input[type="text"],
+        .module-row select {
+            font-size: 1.6em;
+            padding: 20px 28px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 380px;
+            height: 70px;
+            box-sizing: border-box;
+        }
+        .module-row button {
+            font-size: 1.6em;
+            padding: 20px 32px;
+            border-radius: 8px;
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            height: 70px;
+            min-width: 240px;
+        }
+        .module-row button:hover {
+            background: #1976d2;
+        }
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3em;
+            margin-bottom: 48px;
+            margin-left: 0;
+        }
+    </style>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="main-title">数据维护</div>
+        <!-- 命途维护区块 -->
+        <div class="module-block" id="fate-block">
+            <div class="module-title">命途维护</div>
+            <!-- 添加命途 -->
+            <form id="add-fate-form">
+                <div class="module-row">
+                    <input type="text" id="add-fate-name" placeholder="命途名称" required>
+                    <button type="submit">添加命途</button>
+                </div>
+            </form>
+            <!-- 修改命途 -->
+            <div class="module-row">
+                <input type="text" id="edit-fate-old" placeholder="原命途名称" required>
+                <button type="button" onclick="showEditFateModal()">修改命途</button>
+                <input type="text" id="delete-fate-name" placeholder="命途名称" required>
+                <button type="button" onclick="deleteFate()">删除命途</button>
+            </div>
+        </div>
+        <!-- 修改命途弹窗 -->
+        <div class="modal" id="edit-fate-modal">
+            <div class="modal-content">
+                <h3>修改命途</h3>
+                <form id="edit-fate-form" style="display: flex; gap: 20px; align-items: center;">
+                    <input type="text" id="edit-fate-new" placeholder="新命途名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <button type="submit">保存修改</button>
+                    <button type="button" onclick="closeEditFateModal()">取消</button>
+                </form>
+            </div>
+        </div>
+        <!-- 属性维护区块 -->
+        <div class="module-block" id="attribute-block">
+            <div class="module-title">属性维护</div>
+            <!-- 添加属性 -->
+            <form id="add-attribute-form">
+                <div class="module-row">
+                    <input type="text" id="add-attribute-name" placeholder="属性名称" required>
+                    <button type="submit">添加属性</button>
+                </div>
+            </form>
+            <!-- 修改属性 -->
+            <div class="module-row">
+                <input type="text" id="edit-attribute-old" placeholder="原属性名称" required>
+                <button type="button" onclick="showEditAttributeModal()">修改属性</button>
+                <input type="text" id="delete-attribute-name" placeholder="属性名称" required>
+                <button type="button" onclick="deleteAttribute()">删除属性</button>
+            </div>
+        </div>
+        <!-- 修改属性弹窗 -->
+        <div class="modal" id="edit-attribute-modal">
+            <div class="modal-content">
+                <h3>修改属性</h3>
+                <form id="edit-attribute-form" style="display: flex; gap: 20px; align-items: center;">
+                    <input type="text" id="edit-attribute-new" placeholder="新属性名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <button type="submit">保存修改</button>
+                    <button type="button" onclick="closeEditAttributeModal()">取消</button>
+                </form>
+            </div>
+        </div>
+        <!-- 阵营维护区块 -->
+        <div class="module-block" id="camp-block">
+            <div class="module-title">阵营维护</div>
+            <!-- 添加阵营 -->
+            <form id="add-camp-form">
+                <div class="module-row">
+                    <input type="text" id="add-camp-name" placeholder="阵营名称" required>
+                    <button type="submit">添加阵营</button>
+                </div>
+            </form>
+            <!-- 修改阵营 -->
+            <div class="module-row">
+                <input type="text" id="edit-camp-old" placeholder="原阵营名称" required>
+                <button type="button" onclick="showEditCampModal()">修改阵营</button>
+                <input type="text" id="delete-camp-name" placeholder="阵营名称" required>
+                <button type="button" onclick="deleteCamp()">删除阵营</button>
+            </div>
+        </div>
+        <!-- 修改阵营弹窗 -->
+        <div class="modal" id="edit-camp-modal">
+            <div class="modal-content">
+                <h3>修改阵营</h3>
+                <form id="edit-camp-form" style="display: flex; gap: 20px; align-items: center;">
+                    <input type="text" id="edit-camp-new" placeholder="新阵营名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <button type="submit">保存修改</button>
+                    <button type="button" onclick="closeEditCampModal()">取消</button>
+                </form>
+            </div>
+        </div>
+        <!-- 标签维护区块 -->
+        <div class="module-block" id="tag-block">
+            <div class="module-title">标签维护</div>
+            <!-- 添加标签 -->
+            <form id="add-tag-form">
+                <div class="module-row">
+                    <input type="text" id="add-tag-name" placeholder="标签名称" required>
+                    <button type="submit">添加标签</button>
+                </div>
+            </form>
+            <!-- 修改标签 -->
+            <div class="module-row">
+                <input type="text" id="edit-tag-old" placeholder="原标签名称" required>
+                <button type="button" onclick="showEditTagModal()">修改标签</button>
+                <input type="text" id="delete-tag-name" placeholder="标签名称" required>
+                <button type="button" onclick="deleteTag()">删除标签</button>
+            </div>
+        </div>
+        <!-- 修改标签弹窗 -->
+        <div class="modal" id="edit-tag-modal">
+            <div class="modal-content">
+                <h3>修改标签</h3>
+                <form id="edit-tag-form" style="display: flex; gap: 20px; align-items: center;">
+                    <input type="text" id="edit-tag-new" placeholder="新标签名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <button type="submit">保存修改</button>
+                    <button type="button" onclick="closeEditTagModal()">取消</button>
+                </form>
+            </div>
+        </div>
+        <!-- BOSS维护区块 -->
+        <div class="module-block" id="boss-block">
+            <div class="module-title">BOSS维护</div>
+            <!-- 添加BOSS -->
+            <form id="add-boss-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                <div style="display: flex; gap: 20px; width: 100%;">
+                    <input type="text" id="add-boss-name" placeholder="BOSS名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <input type="text" id="add-boss-desc" placeholder="BOSS简介" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                </div>
+                <div style="display: flex; gap: 20px; width: 100%;">
+                    <select id="add-boss-camp" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择阵营</option></select>
+                    <select id="add-boss-weakness" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择弱点属性</option></select>
+                    <button type="submit">添加BOSS</button>
+                </div>
+            </form>
+            <!-- 修改BOSS -->
+            <div class="module-row">
+                <input type="text" id="edit-boss-old" placeholder="原BOSS名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="showEditBossModal()">修改BOSS</button>
+            </div>
+            <div class="module-row">
+                <input type="text" id="delete-boss-name" placeholder="BOSS名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="deleteBoss()">删除BOSS</button>
+            </div>
+        </div>
+        <!-- 修改BOSS弹窗 -->
+        <div class="modal" id="edit-boss-modal">
+            <div class="modal-content">
+                <h3>修改BOSS</h3>
+                <form id="edit-boss-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <input type="text" id="edit-boss-new" placeholder="新BOSS名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                        <input type="text" id="edit-boss-desc" placeholder="BOSS简介" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    </div>
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <select id="edit-boss-camp" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择阵营</option></select>
+                        <select id="edit-boss-weakness" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择弱点属性</option></select>
+                        <button type="submit">保存修改</button>
+                        <button type="button" onclick="closeEditBossModal()">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- 环境维护区块 -->
+        <div class="module-block" id="env-block">
+            <div class="module-title">环境维护</div>
+            <!-- 添加环境 -->
+            <form id="add-env-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                <div style="display: flex; gap: 20px; width: 100%;">
+                    <input type="text" id="add-env-name" placeholder="环境名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <input type="text" id="add-env-buff" placeholder="环境buff" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <button type="submit">添加环境</button>
+                </div>
+            </form>
+            <!-- 修改环境 -->
+            <div class="module-row">
+                <input type="text" id="edit-env-old" placeholder="原环境名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="showEditEnvModal()">修改环境</button>
+            </div>
+            <div class="module-row">
+                <input type="text" id="delete-env-name" placeholder="环境名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="deleteEnv()">删除环境</button>
+            </div>
+        </div>
+        <!-- 修改环境弹窗 -->
+        <div class="modal" id="edit-env-modal">
+            <div class="modal-content">
+                <h3>修改环境</h3>
+                <form id="edit-env-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <input type="text" id="edit-env-new" placeholder="新环境名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                        <input type="text" id="edit-env-buff" placeholder="环境buff" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    </div>
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <button type="submit">保存修改</button>
+                        <button type="button" onclick="closeEditEnvModal()">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- 角色维护区块 -->
+        <div class="module-block" id="character-block">
+            <div class="module-title">角色维护</div>
+            <!-- 添加角色 -->
+            <form id="add-character-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                <div style="display: flex; gap: 20px; width: 100%;">
+                    <input type="text" id="add-character-name" placeholder="角色名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <input type="text" id="add-character-desc" placeholder="角色简介" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    <input type="text" id="add-character-skill" placeholder="技能" style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                </div>
+                <div style="display: flex; gap: 20px; width: 100%;">
+                    <select id="add-character-camp" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择阵营</option></select>
+                    <select id="add-character-attr" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择属性</option></select>
+                    <select id="add-character-fate" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择命途</option></select>
+                    <button type="submit">添加角色</button>
+                </div>
+            </form>
+            <!-- 修改角色 -->
+            <div class="module-row">
+                <input type="text" id="edit-character-old" placeholder="原角色名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="showEditCharacterModal()">修改角色</button>
+            </div>
+            <div class="module-row">
+                <input type="text" id="delete-character-name" placeholder="角色名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                <button type="button" onclick="deleteCharacter()">删除角色</button>
+            </div>
+        </div>
+        <!-- 修改角色弹窗 -->
+        <div class="modal" id="edit-character-modal">
+            <div class="modal-content">
+                <h3>修改角色</h3>
+                <form id="edit-character-form" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <input type="text" id="edit-character-new" placeholder="新角色名称" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                        <input type="text" id="edit-character-desc" placeholder="角色简介" style="width:450px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                        <input type="text" id="edit-character-skill" placeholder="技能" style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;">
+                    </div>
+                    <div style="display: flex; gap: 20px; width: 100%;">
+                        <select id="edit-character-camp" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择阵营</option></select>
+                        <select id="edit-character-attr" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择属性</option></select>
+                        <select id="edit-character-fate" required style="width:320px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择命途</option></select>
+                        <button type="submit">保存修改</button>
+                        <button type="button" onclick="closeEditCharacterModal()">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- 角色-标签维护区块 -->
+        <div class="module-block" id="character-tag-block">
+            <div class="module-title">角色-标签维护</div>
+            <form id="add-character-tag-form" style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                <select id="add-character-tag-character" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择角色</option></select>
+                <select id="add-character-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">添加关联</button>
+            </form>
+            <form id="delete-character-tag-form" style="display: flex; gap: 20px; align-items: center;">
+                <select id="delete-character-tag-character" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择角色</option></select>
+                <select id="delete-character-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">删除关联</button>
+            </form>
+        </div>
+        <!-- 环境-标签维护区块 -->
+        <div class="module-block" id="env-tag-block">
+            <div class="module-title">环境-标签维护</div>
+            <form id="add-env-tag-form" style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                <select id="add-env-tag-env" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择环境</option></select>
+                <select id="add-env-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">添加关联</button>
+            </form>
+            <form id="delete-env-tag-form" style="display: flex; gap: 20px; align-items: center;">
+                <select id="delete-env-tag-env" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择环境</option></select>
+                <select id="delete-env-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">删除关联</button>
+            </form>
+        </div>
+        <!-- BOSS-标签维护区块 -->
+        <div class="module-block" id="boss-tag-block">
+            <div class="module-title">BOSS-标签维护</div>
+            <form id="add-boss-tag-form" style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                <select id="add-boss-tag-boss" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择BOSS</option></select>
+                <select id="add-boss-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">添加关联</button>
+            </form>
+            <form id="delete-boss-tag-form" style="display: flex; gap: 20px; align-items: center;">
+                <select id="delete-boss-tag-boss" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择BOSS</option></select>
+                <select id="delete-boss-tag-tag" required style="width:380px; height:70px; font-size:1.6em; padding:20px 28px; border-radius:8px; border:1px solid #ccc;"><option value="">选择标签</option></select>
+                <button type="submit">删除关联</button>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+// 全局变量声明
+let allCamps = [];
+let allAttributes = [];
+let allFates = [];
+let allCharacters = [];
+let allTags = [];
+let allEnvs = [];
+let allBosses = [];
+
+// 确保DOM完全加载后再执行
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM内容加载完成，开始初始化...');
+    
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData && userData.user) {
+        document.getElementById('username').textContent = userData.user.username;
+    }
+    
+    // 延迟加载下拉框数据，确保所有DOM元素都已准备好
+    setTimeout(() => {
+        console.log('开始加载所有下拉框数据...');
+        
+        // 加载所有下拉框数据
+        loadCampsAndAttributes()    // BOSS维护用（阵营和属性）
+            .then(() => console.log('BOSS下拉框数据加载完成'))
+            .catch(err => console.error('BOSS下拉框数据加载失败:', err));
+            
+        loadCampsAttrsFates()       // 角色维护用（阵营、属性、命途）
+            .then(() => console.log('角色下拉框数据加载完成'))
+            .catch(err => console.error('角色下拉框数据加载失败:', err));
+            
+        loadCharactersAndTags()     // 角色-标签关联用
+            .then(() => console.log('角色标签关联下拉框数据加载完成'))
+            .catch(err => console.error('角色标签关联下拉框数据加载失败:', err));
+            
+        loadEnvsAndTags()           // 环境-标签关联用
+            .then(() => console.log('环境标签关联下拉框数据加载完成'))
+            .catch(err => console.error('环境标签关联下拉框数据加载失败:', err));
+            
+        loadBossesAndTags()         // BOSS-标签关联用
+            .then(() => console.log('BOSS标签关联下拉框数据加载完成'))
+            .catch(err => console.error('BOSS标签关联下拉框数据加载失败:', err));
+    }, 500);
+});
+
+// 备用：如果DOMContentLoaded没有触发，使用window.onload
+window.addEventListener('load', function() {
+    console.log('页面完全加载完成（备用加载）');
+});
+// 添加命途
+const addFateForm = document.getElementById('add-fate-form');
+addFateForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-fate-name').value.trim();
+    if (!name) return;
+    const res = await fetch('http://localhost:5000/api/fates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fate_name: name })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！命途已添加到数据库');
+        addFateForm.reset();
+        // 显示当前所有命途确认添加成功
+        showAllFates();
+        // 更新角色维护的命途下拉框
+        loadCampsAttrsFates();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除命途
+async function deleteFate() {
+    const name = document.getElementById('delete-fate-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该命途吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/fates?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！命途已从数据库中删除');
+        document.getElementById('delete-fate-name').value = '';
+        // 显示当前所有命途确认删除成功
+        showAllFates();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改命途弹窗
+function showEditFateModal() {
+    const oldName = document.getElementById('edit-fate-old').value.trim();
+    if (!oldName) { alert('请输入原命途名称'); return; }
+    document.getElementById('edit-fate-modal').style.display = 'flex';
+}
+function closeEditFateModal() {
+    document.getElementById('edit-fate-modal').style.display = 'none';
+    document.getElementById('edit-fate-form').reset();
+}
+// 显示所有数据的通用函数
+async function showAllFates() {
+    try {
+        const response = await fetch('http://localhost:5000/api/fates');
+        const fates = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有命途：', fates);
+        }
+    } catch (error) {
+        console.error('获取命途列表失败:', error);
+    }
+}
+
+async function showAllAttributes() {
+    try {
+        const response = await fetch('http://localhost:5000/api/attributes');
+        const attributes = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有属性：', attributes);
+        }
+    } catch (error) {
+        console.error('获取属性列表失败:', error);
+    }
+}
+
+async function showAllCamps() {
+    try {
+        const response = await fetch('http://localhost:5000/api/camps');
+        const camps = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有阵营：', camps);
+        }
+    } catch (error) {
+        console.error('获取阵营列表失败:', error);
+    }
+}
+
+async function showAllTags() {
+    try {
+        const response = await fetch('http://localhost:5000/api/tags');
+        const tags = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有标签：', tags);
+        }
+    } catch (error) {
+        console.error('获取标签列表失败:', error);
+    }
+}
+
+async function showAllBosses() {
+    try {
+        const response = await fetch('http://localhost:5000/api/bosses');
+        const bosses = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有BOSS：', bosses);
+        }
+    } catch (error) {
+        console.error('获取BOSS列表失败:', error);
+    }
+}
+
+async function showAllEnvironments() {
+    try {
+        const response = await fetch('http://localhost:5000/api/environments');
+        const envs = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有环境：', envs);
+        }
+    } catch (error) {
+        console.error('获取环境列表失败:', error);
+    }
+}
+
+async function showAllCharacters() {
+    try {
+        const response = await fetch('http://localhost:5000/api/characters');
+        const characters = await response.json();
+        if (response.ok) {
+            console.log('当前数据库中的所有角色：', characters);
+        }
+    } catch (error) {
+        console.error('获取角色列表失败:', error);
+    }
+}
+
+// 修改命途
+const editFateForm = document.getElementById('edit-fate-form');
+editFateForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-fate-old').value.trim();
+    const newName = document.getElementById('edit-fate-new').value.trim();
+    if (!oldName || !newName) return;
+    const res = await fetch('http://localhost:5000/api/fates', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！命途已在数据库中更新');
+        closeEditFateModal();
+        document.getElementById('edit-fate-old').value = '';
+        // 显示当前所有命途确认修改成功
+        showAllFates();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 属性维护JS
+// 添加属性
+const addAttributeForm = document.getElementById('add-attribute-form');
+addAttributeForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-attribute-name').value.trim();
+    if (!name) return;
+    const res = await fetch('http://localhost:5000/api/attributes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attribute_name: name })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！属性已添加到数据库');
+        addAttributeForm.reset();
+        showAllAttributes();
+        // 更新相关下拉框
+        loadCampsAndAttributes();
+        loadCampsAttrsFates();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除属性
+async function deleteAttribute() {
+    const name = document.getElementById('delete-attribute-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该属性吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/attributes?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！属性已从数据库中删除');
+        document.getElementById('delete-attribute-name').value = '';
+        showAllAttributes();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改属性弹窗
+function showEditAttributeModal() {
+    const oldName = document.getElementById('edit-attribute-old').value.trim();
+    if (!oldName) { alert('请输入原属性名称'); return; }
+    document.getElementById('edit-attribute-modal').style.display = 'flex';
+}
+function closeEditAttributeModal() {
+    document.getElementById('edit-attribute-modal').style.display = 'none';
+    document.getElementById('edit-attribute-form').reset();
+}
+// 修改属性
+const editAttributeForm = document.getElementById('edit-attribute-form');
+editAttributeForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-attribute-old').value.trim();
+    const newName = document.getElementById('edit-attribute-new').value.trim();
+    if (!oldName || !newName) return;
+    const res = await fetch('http://localhost:5000/api/attributes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！属性已在数据库中更新');
+        closeEditAttributeModal();
+        document.getElementById('edit-attribute-old').value = '';
+        showAllAttributes();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 阵营维护JS
+// 添加阵营
+const addCampForm = document.getElementById('add-camp-form');
+addCampForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-camp-name').value.trim();
+    if (!name) return;
+    const res = await fetch('http://localhost:5000/api/camps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ camp_name: name })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！阵营已添加到数据库');
+        addCampForm.reset();
+        showAllCamps();
+        // 更新相关下拉框
+        loadCampsAndAttributes();
+        loadCampsAttrsFates();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除阵营
+async function deleteCamp() {
+    const name = document.getElementById('delete-camp-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该阵营吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/camps?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！阵营已从数据库中删除');
+        document.getElementById('delete-camp-name').value = '';
+        showAllCamps();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改阵营弹窗
+function showEditCampModal() {
+    const oldName = document.getElementById('edit-camp-old').value.trim();
+    if (!oldName) { alert('请输入原阵营名称'); return; }
+    document.getElementById('edit-camp-modal').style.display = 'flex';
+}
+function closeEditCampModal() {
+    document.getElementById('edit-camp-modal').style.display = 'none';
+    document.getElementById('edit-camp-form').reset();
+}
+// 修改阵营
+const editCampForm = document.getElementById('edit-camp-form');
+editCampForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-camp-old').value.trim();
+    const newName = document.getElementById('edit-camp-new').value.trim();
+    if (!oldName || !newName) return;
+    const res = await fetch('http://localhost:5000/api/camps', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！阵营已在数据库中更新');
+        closeEditCampModal();
+        document.getElementById('edit-camp-old').value = '';
+        showAllCamps();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 标签维护JS
+// 添加标签
+const addTagForm = document.getElementById('add-tag-form');
+addTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-tag-name').value.trim();
+    if (!name) return;
+    const res = await fetch('http://localhost:5000/api/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！标签已添加到数据库');
+        addTagForm.reset();
+        showAllTags();
+        // 更新相关下拉框
+        loadCharactersAndTags();
+        loadEnvsAndTags();
+        loadBossesAndTags();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除标签
+async function deleteTag() {
+    const name = document.getElementById('delete-tag-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该标签吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/tags?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！标签已从数据库中删除');
+        document.getElementById('delete-tag-name').value = '';
+        showAllTags();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改标签弹窗
+function showEditTagModal() {
+    const oldName = document.getElementById('edit-tag-old').value.trim();
+    if (!oldName) { alert('请输入原标签名称'); return; }
+    document.getElementById('edit-tag-modal').style.display = 'flex';
+}
+function closeEditTagModal() {
+    document.getElementById('edit-tag-modal').style.display = 'none';
+    document.getElementById('edit-tag-form').reset();
+}
+// 修改标签
+const editTagForm = document.getElementById('edit-tag-form');
+editTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-tag-old').value.trim();
+    const newName = document.getElementById('edit-tag-new').value.trim();
+    if (!oldName || !newName) return;
+    const res = await fetch('http://localhost:5000/api/tags', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！标签已在数据库中更新');
+        closeEditTagModal();
+        document.getElementById('edit-tag-old').value = '';
+        showAllTags();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// BOSS维护JS
+// 初始化阵营和属性下拉
+async function loadCampsAndAttributes() {
+    try {
+        console.log('开始加载BOSS维护的阵营和属性数据...');
+        
+        const campRes = await fetch('http://localhost:5000/api/camps');
+        if (!campRes.ok) {
+            throw new Error(`阵营API请求失败: ${campRes.status}`);
+        }
+        allCamps = await campRes.json();
+        console.log('阵营数据加载成功:', allCamps);
+        
+        const attrRes = await fetch('http://localhost:5000/api/attributes');
+        if (!attrRes.ok) {
+            throw new Error(`属性API请求失败: ${attrRes.status}`);
+        }
+        allAttributes = await attrRes.json();
+        console.log('属性数据加载成功:', allAttributes);
+        
+        // 添加BOSS用
+        const campSel = document.getElementById('add-boss-camp');
+        if (campSel) {
+            campSel.innerHTML = '<option value="">选择阵营</option>' + allCamps.map(c=>`<option value="${c.camp_id}">${c.camp_name}</option>`).join('');
+            console.log('BOSS添加阵营下拉框已更新');
+        }
+        
+        const attrSel = document.getElementById('add-boss-weakness');
+        if (attrSel) {
+            attrSel.innerHTML = '<option value="">选择弱点属性</option>' + allAttributes.map(a=>`<option value="${a.attribute_id}">${a.attribute_name}</option>`).join('');
+            console.log('BOSS添加弱点属性下拉框已更新');
+        }
+        
+        // 修改BOSS用
+        const campSel2 = document.getElementById('edit-boss-camp');
+        if (campSel2) {
+            campSel2.innerHTML = '<option value="">选择阵营</option>' + allCamps.map(c=>`<option value="${c.camp_id}">${c.camp_name}</option>`).join('');
+            console.log('BOSS修改阵营下拉框已更新');
+        }
+        
+        const attrSel2 = document.getElementById('edit-boss-weakness');
+        if (attrSel2) {
+            attrSel2.innerHTML = '<option value="">选择弱点属性</option>' + allAttributes.map(a=>`<option value="${a.attribute_id}">${a.attribute_name}</option>`).join('');
+            console.log('BOSS修改弱点属性下拉框已更新');
+        }
+        
+        console.log('loadCampsAndAttributes 执行完成');
+    } catch (error) {
+        console.error('loadCampsAndAttributes 执行失败:', error);
+        alert('加载阵营和属性数据失败: ' + error.message);
+    }
+}
+// 添加BOSS
+const addBossForm = document.getElementById('add-boss-form');
+addBossForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-boss-name').value.trim();
+    const description = document.getElementById('add-boss-desc').value.trim();
+    const camp_id = document.getElementById('add-boss-camp').value;
+    const weakness_id = document.getElementById('add-boss-weakness').value;
+    if (!name || !camp_id || !weakness_id) return;
+    const res = await fetch('http://localhost:5000/api/bosses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, camp_id, weakness_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！BOSS已添加到数据库');
+        addBossForm.reset();
+        showAllBosses();
+        // 更新BOSS-标签关联的BOSS下拉框
+        loadBossesAndTags();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除BOSS
+async function deleteBoss() {
+    const name = document.getElementById('delete-boss-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该BOSS吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/bosses?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！BOSS已从数据库中删除');
+        document.getElementById('delete-boss-name').value = '';
+        showAllBosses();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改BOSS弹窗
+function showEditBossModal() {
+    const oldName = document.getElementById('edit-boss-old').value.trim();
+    if (!oldName) { alert('请输入原BOSS名称'); return; }
+    document.getElementById('edit-boss-modal').style.display = 'flex';
+}
+function closeEditBossModal() {
+    document.getElementById('edit-boss-modal').style.display = 'none';
+    document.getElementById('edit-boss-form').reset();
+}
+// 修改BOSS
+const editBossForm = document.getElementById('edit-boss-form');
+editBossForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-boss-old').value.trim();
+    const newName = document.getElementById('edit-boss-new').value.trim();
+    const description = document.getElementById('edit-boss-desc').value.trim();
+    const camp_id = document.getElementById('edit-boss-camp').value;
+    const weakness_id = document.getElementById('edit-boss-weakness').value;
+    if (!oldName || !newName || !camp_id || !weakness_id) return;
+    const res = await fetch('http://localhost:5000/api/bosses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName, description, camp_id, weakness_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！BOSS已在数据库中更新');
+        closeEditBossModal();
+        document.getElementById('edit-boss-old').value = '';
+        showAllBosses();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 环境维护JS
+// 添加环境
+const addEnvForm = document.getElementById('add-env-form');
+addEnvForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-env-name').value.trim();
+    const buff = document.getElementById('add-env-buff').value.trim();
+    if (!name) return;
+    const res = await fetch('http://localhost:5000/api/environments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, buff })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！环境已添加到数据库');
+        addEnvForm.reset();
+        showAllEnvironments();
+        // 更新环境-标签关联的环境下拉框
+        loadEnvsAndTags();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除环境
+async function deleteEnv() {
+    const name = document.getElementById('delete-env-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该环境吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/environments?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！环境已从数据库中删除');
+        document.getElementById('delete-env-name').value = '';
+        showAllEnvironments();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改环境弹窗
+function showEditEnvModal() {
+    const oldName = document.getElementById('edit-env-old').value.trim();
+    if (!oldName) { alert('请输入原环境名称'); return; }
+    document.getElementById('edit-env-modal').style.display = 'flex';
+}
+function closeEditEnvModal() {
+    document.getElementById('edit-env-modal').style.display = 'none';
+    document.getElementById('edit-env-form').reset();
+}
+// 修改环境
+const editEnvForm = document.getElementById('edit-env-form');
+editEnvForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-env-old').value.trim();
+    const newName = document.getElementById('edit-env-new').value.trim();
+    const buff = document.getElementById('edit-env-buff').value.trim();
+    if (!oldName || !newName) return;
+    const res = await fetch('http://localhost:5000/api/environments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName, buff })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！环境已在数据库中更新');
+        closeEditEnvModal();
+        document.getElementById('edit-env-old').value = '';
+        showAllEnvironments();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 角色维护JS
+// 初始化阵营、属性、命途下拉
+async function loadCampsAttrsFates() {
+    try {
+        console.log('开始加载角色维护的阵营、属性、命途数据...');
+        
+        const campRes = await fetch('http://localhost:5000/api/camps');
+        if (!campRes.ok) {
+            throw new Error(`阵营API请求失败: ${campRes.status}`);
+        }
+        allCamps = await campRes.json();
+        console.log('阵营数据加载成功:', allCamps);
+        
+        const attrRes = await fetch('http://localhost:5000/api/attributes');
+        if (!attrRes.ok) {
+            throw new Error(`属性API请求失败: ${attrRes.status}`);
+        }
+        allAttributes = await attrRes.json();
+        console.log('属性数据加载成功:', allAttributes);
+        
+        const fateRes = await fetch('http://localhost:5000/api/fates');
+        if (!fateRes.ok) {
+            throw new Error(`命途API请求失败: ${fateRes.status}`);
+        }
+        allFates = await fateRes.json();
+        console.log('命途数据加载成功:', allFates);
+        
+        // 添加角色用
+        const addCharCamp = document.getElementById('add-character-camp');
+        if (addCharCamp) {
+            addCharCamp.innerHTML = '<option value="">选择阵营</option>' + allCamps.map(c=>`<option value="${c.camp_id}">${c.camp_name}</option>`).join('');
+            console.log('角色添加阵营下拉框已更新');
+        }
+        
+        const addCharAttr = document.getElementById('add-character-attr');
+        if (addCharAttr) {
+            addCharAttr.innerHTML = '<option value="">选择属性</option>' + allAttributes.map(a=>`<option value="${a.attribute_id}">${a.attribute_name}</option>`).join('');
+            console.log('角色添加属性下拉框已更新');
+        }
+        
+        const addCharFate = document.getElementById('add-character-fate');
+        if (addCharFate) {
+            addCharFate.innerHTML = '<option value="">选择命途</option>' + allFates.map(f=>`<option value="${f.fate_id}">${f.fate_name}</option>`).join('');
+            console.log('角色添加命途下拉框已更新');
+        }
+        
+        // 修改角色用
+        const editCharCamp = document.getElementById('edit-character-camp');
+        if (editCharCamp) {
+            editCharCamp.innerHTML = '<option value="">选择阵营</option>' + allCamps.map(c=>`<option value="${c.camp_id}">${c.camp_name}</option>`).join('');
+            console.log('角色修改阵营下拉框已更新');
+        }
+        
+        const editCharAttr = document.getElementById('edit-character-attr');
+        if (editCharAttr) {
+            editCharAttr.innerHTML = '<option value="">选择属性</option>' + allAttributes.map(a=>`<option value="${a.attribute_id}">${a.attribute_name}</option>`).join('');
+            console.log('角色修改属性下拉框已更新');
+        }
+        
+        const editCharFate = document.getElementById('edit-character-fate');
+        if (editCharFate) {
+            editCharFate.innerHTML = '<option value="">选择命途</option>' + allFates.map(f=>`<option value="${f.fate_id}">${f.fate_name}</option>`).join('');
+            console.log('角色修改命途下拉框已更新');
+        }
+        
+        console.log('loadCampsAttrsFates 执行完成');
+    } catch (error) {
+        console.error('loadCampsAttrsFates 执行失败:', error);
+        alert('加载角色维护数据失败: ' + error.message);
+    }
+}
+// 添加角色
+const addCharacterForm = document.getElementById('add-character-form');
+addCharacterForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-character-name').value.trim();
+    const description = document.getElementById('add-character-desc').value.trim();
+    const skill = document.getElementById('add-character-skill').value.trim();
+    const camp_id = document.getElementById('add-character-camp').value;
+    const attribute_id = document.getElementById('add-character-attr').value;
+    const fate_id = document.getElementById('add-character-fate').value;
+    if (!name || !camp_id || !attribute_id || !fate_id) return;
+    const res = await fetch('http://localhost:5000/api/characters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, camp_id, attribute_id, fate_id, skill })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！角色已添加到数据库');
+        addCharacterForm.reset();
+        showAllCharacters();
+        // 更新角色-标签关联的角色下拉框
+        loadCharactersAndTags();
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除角色
+async function deleteCharacter() {
+    const name = document.getElementById('delete-character-name').value.trim();
+    if (!name) return;
+    if (!confirm('确定要删除该角色吗？')) return;
+    const res = await fetch(`http://localhost:5000/api/characters?name=${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！角色已从数据库中删除');
+        document.getElementById('delete-character-name').value = '';
+        showAllCharacters();
+    } else {
+        alert(data.error || '删除失败');
+    }
+}
+// 修改角色弹窗
+function showEditCharacterModal() {
+    const oldName = document.getElementById('edit-character-old').value.trim();
+    if (!oldName) { alert('请输入原角色名称'); return; }
+    document.getElementById('edit-character-modal').style.display = 'flex';
+}
+function closeEditCharacterModal() {
+    document.getElementById('edit-character-modal').style.display = 'none';
+    document.getElementById('edit-character-form').reset();
+}
+// 修改角色
+const editCharacterForm = document.getElementById('edit-character-form');
+editCharacterForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('edit-character-old').value.trim();
+    const newName = document.getElementById('edit-character-new').value.trim();
+    const description = document.getElementById('edit-character-desc').value.trim();
+    const skill = document.getElementById('edit-character-skill').value.trim();
+    const camp_id = document.getElementById('edit-character-camp').value;
+    const attribute_id = document.getElementById('edit-character-attr').value;
+    const fate_id = document.getElementById('edit-character-fate').value;
+    if (!oldName || !newName || !camp_id || !attribute_id || !fate_id) return;
+    const res = await fetch('http://localhost:5000/api/characters', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ old_name: oldName, new_name: newName, description, camp_id, attribute_id, fate_id, skill })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('修改成功！角色已在数据库中更新');
+        closeEditCharacterModal();
+        document.getElementById('edit-character-old').value = '';
+        showAllCharacters();
+    } else {
+        alert(data.error || '修改失败');
+    }
+};
+// 角色-标签维护JS
+// 初始化角色和标签下拉
+async function loadCharactersAndTags() {
+    const charRes = await fetch('http://localhost:5000/api/characters');
+    allCharacters = await charRes.json();
+    const tagRes = await fetch('http://localhost:5000/api/tags');
+    allTags = await tagRes.json();
+    // 添加
+    document.getElementById('add-character-tag-character').innerHTML = '<option value="">选择角色</option>' + allCharacters.map(c=>`<option value="${c.character_id}">${c.name}</option>`).join('');
+    document.getElementById('add-character-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+    // 删除
+    document.getElementById('delete-character-tag-character').innerHTML = '<option value="">选择角色</option>' + allCharacters.map(c=>`<option value="${c.character_id}">${c.name}</option>`).join('');
+    document.getElementById('delete-character-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+}
+// 添加角色-标签关联
+const addCharacterTagForm = document.getElementById('add-character-tag-form');
+addCharacterTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const character_id = document.getElementById('add-character-tag-character').value;
+    const tag_id = document.getElementById('add-character-tag-tag').value;
+    if (!character_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/character_tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ character_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！角色标签关联已添加到数据库');
+        addCharacterTagForm.reset();
+        console.log('角色标签关联操作完成');
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除角色-标签关联
+const deleteCharacterTagForm = document.getElementById('delete-character-tag-form');
+deleteCharacterTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const character_id = document.getElementById('delete-character-tag-character').value;
+    const tag_id = document.getElementById('delete-character-tag-tag').value;
+    if (!character_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/character_tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ character_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！角色标签关联已从数据库中删除');
+        deleteCharacterTagForm.reset();
+        console.log('角色标签关联删除完成');
+    } else {
+        alert(data.error || '删除失败');
+    }
+};
+// 环境-标签维护JS
+// 初始化环境和标签下拉
+async function loadEnvsAndTags() {
+    const envRes = await fetch('http://localhost:5000/api/environments');
+    allEnvs = await envRes.json();
+    const tagRes = await fetch('http://localhost:5000/api/tags');
+    allTags = await tagRes.json();
+    // 添加
+    document.getElementById('add-env-tag-env').innerHTML = '<option value="">选择环境</option>' + allEnvs.map(e=>`<option value="${e.env_id}">${e.name}</option>`).join('');
+    document.getElementById('add-env-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+    // 删除
+    document.getElementById('delete-env-tag-env').innerHTML = '<option value="">选择环境</option>' + allEnvs.map(e=>`<option value="${e.env_id}">${e.name}</option>`).join('');
+    document.getElementById('delete-env-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+}
+// 添加环境-标签关联
+const addEnvTagForm = document.getElementById('add-env-tag-form');
+addEnvTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const env_id = document.getElementById('add-env-tag-env').value;
+    const tag_id = document.getElementById('add-env-tag-tag').value;
+    if (!env_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/environment_tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ env_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！环境标签关联已添加到数据库');
+        addEnvTagForm.reset();
+        console.log('环境标签关联操作完成');
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除环境-标签关联
+const deleteEnvTagForm = document.getElementById('delete-env-tag-form');
+deleteEnvTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const env_id = document.getElementById('delete-env-tag-env').value;
+    const tag_id = document.getElementById('delete-env-tag-tag').value;
+    if (!env_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/environment_tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ env_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！环境标签关联已从数据库中删除');
+        deleteEnvTagForm.reset();
+        console.log('环境标签关联删除完成');
+    } else {
+        alert(data.error || '删除失败');
+    }
+};
+// BOSS-标签维护JS
+// 初始化BOSS和标签下拉
+async function loadBossesAndTags() {
+    const bossRes = await fetch('http://localhost:5000/api/bosses');
+    allBosses = await bossRes.json();
+    const tagRes = await fetch('http://localhost:5000/api/tags');
+    allTags = await tagRes.json();
+    // 添加
+    document.getElementById('add-boss-tag-boss').innerHTML = '<option value="">选择BOSS</option>' + allBosses.map(b=>`<option value="${b.boss_id}">${b.name}</option>`).join('');
+    document.getElementById('add-boss-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+    // 删除
+    document.getElementById('delete-boss-tag-boss').innerHTML = '<option value="">选择BOSS</option>' + allBosses.map(b=>`<option value="${b.boss_id}">${b.name}</option>`).join('');
+    document.getElementById('delete-boss-tag-tag').innerHTML = '<option value="">选择标签</option>' + allTags.map(t=>`<option value="${t.tag_id}">${t.name}</option>`).join('');
+}
+// 添加BOSS-标签关联
+const addBossTagForm = document.getElementById('add-boss-tag-form');
+addBossTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const boss_id = document.getElementById('add-boss-tag-boss').value;
+    const tag_id = document.getElementById('add-boss-tag-tag').value;
+    if (!boss_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/boss_tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ boss_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('添加成功！BOSS标签关联已添加到数据库');
+        addBossTagForm.reset();
+        console.log('BOSS标签关联操作完成');
+    } else {
+        alert(data.error || '添加失败');
+    }
+};
+// 删除BOSS-标签关联
+const deleteBossTagForm = document.getElementById('delete-boss-tag-form');
+deleteBossTagForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const boss_id = document.getElementById('delete-boss-tag-boss').value;
+    const tag_id = document.getElementById('delete-boss-tag-tag').value;
+    if (!boss_id || !tag_id) return;
+    const res = await fetch('http://localhost:5000/api/boss_tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ boss_id, tag_id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        alert('删除成功！BOSS标签关联已从数据库中删除');
+        deleteBossTagForm.reset();
+        console.log('BOSS标签关联删除完成');
+    } else {
+        alert(data.error || '删除失败');
+    }
+};
+</script>
+</html> 
