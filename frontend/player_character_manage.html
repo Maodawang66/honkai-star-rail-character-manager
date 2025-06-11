@@ -1,522 +1,280 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>角色信息维护 - 崩坏星穹铁道角色管理系统</title>
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - 玩家端</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: transparent;
-            margin: 0;
-            padding: 0;
-        }
-        .main-title {
-            font-size: 2.2em;
-            font-weight: bold;
-            color: #1565c0;
-            margin: 30px 0 24px 0;
-            text-align: left;
-            letter-spacing: 2px;
-        }
-        .container {
-            width: calc(100% - 80px);
-            max-width: 1200px;
-            margin: 0 auto;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            padding: 0 32px 32px 32px;
-        }
-        .module-block {
-            width: 100%;
-            margin-bottom: 36px;
-        }
-        .module-title {
-            font-size: 1.6em;
-            font-weight: bold;
-            color: #1976d2;
-            margin: 20px 0 16px 0;
-            text-align: left;
-        }
-        .form-row {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 18px;
-            padding-left: 0;
-            flex-wrap: wrap;
-        }
-        .form-row input[type="text"],
-        .form-row input[type="number"],
-        .form-row input[type="datetime-local"],
-        .form-row select {
-            font-size: 1.3em;
-            padding: 16px 24px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            width: 320px;
-            height: 60px;
-            box-sizing: border-box;
-        }
-        .form-row button {
-            font-size: 1.3em;
-            padding: 16px 28px;
-            border-radius: 8px;
-            background: #2196f3;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            height: 60px;
-            min-width: 280px;
-            white-space: nowrap;
-        }
-        .form-row button:hover {
-            background: #1976d2;
-        }
-        .result-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            min-height: 100px;
-        }
-        .result-item {
-            background: white;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid #2196f3;
-        }
-        .result-item h4 {
-            margin: 0 0 8px 0;
-            color: #1565c0;
-            font-size: 1.1em;
-        }
-        .result-item p {
-            margin: 4px 0;
-            color: #333;
-            font-size: 1.0em;
-        }
-        .back-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            z-index: 100;
-        }
-        .back-link:hover {
-            background: #1976d2;
-        }
-        .back-link:before {
-            content: "← ";
-            margin-right: 5px;
-        }
-        .hint {
-            font-size: 1.0em;
-            color: #666;
-            margin-left: 10px;
-        }
-        .autocomplete {
-            position: relative;
-        }
-        .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        .autocomplete-item {
+        .container { max-width: 1200px; margin: 20px auto; }
+        .card { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .alert { margin-top: 20px; }
+        .character-list { margin-top: 20px; }
+        .character-item { 
             padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
         }
-        .autocomplete-item:hover {
-            background: #f0f0f0;
+        .character-item:hover {
+            background-color: #f8f9fa;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
         }
     </style>
-    <script src="js/auth.js"></script>
 </head>
 <body>
     <div class="container">
-        <a href="home.html" class="back-link">返回主页</a>
-        <div class="main-title">角色信息维护</div>
+        <h1 class="text-center mb-4">角色管理</h1>
         
-        <!-- 角色添加区块 -->
-        <div class="module-block" id="add-character-block">
-            <div class="module-title">角色添加</div>
-            <form id="add-character-form">
-                <div class="form-row">
-                    <div class="autocomplete">
-                        <input type="text" id="add-character-name" placeholder="角色名称" required>
-                        <div id="add-autocomplete" class="autocomplete-list"></div>
-                    </div>
-                    <input type="number" id="add-star-soul" placeholder="星魂(0-6)" min="0" max="6">
-                    <input type="number" id="add-level" placeholder="等级(1-80)" min="1" max="80" required>
-                </div>
-                <div class="form-row">
-                    <input type="number" id="add-favor" placeholder="好感度(0-10)" min="0" max="10">
-                    <span class="hint">好感度范围：0-10，默认值：5</span>
-                </div>
-                <div class="form-row">
-                    <input type="datetime-local" id="add-join-time" placeholder="获得时间">
-                    <span class="hint">可不填，默认为空</span>
-                </div>
-                <div class="form-row">
-                    <button type="submit">添加角色</button>
-                </div>
-            </form>
-            <div id="add-results" class="result-section" style="display: none;">
-                <h3>操作结果</h3>
-                <div id="add-content"></div>
+        <!-- 用户信息显示 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">当前用户信息</h5>
+                <div id="userInfo">加载中...</div>
             </div>
         </div>
 
-        <!-- 角色修改区块 -->
-        <div class="module-block" id="modify-character-block">
-            <div class="module-title">角色修改</div>
-            <form id="modify-character-form">
-                <div class="form-row">
-                    <div class="autocomplete">
-                        <input type="text" id="modify-character-name" placeholder="角色名称" required>
-                        <div id="modify-autocomplete" class="autocomplete-list"></div>
+        <!-- 添加角色表单 -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">添加角色</h5>
+                <form id="addCharacterForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="characterSelect">选择角色</label>
+                                <select class="form-select" id="characterSelect" required>
+                                    <option value="">请选择角色</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="starSoul">星魂等级 (0-6)</label>
+                                <input type="number" class="form-control" id="starSoul" min="0" max="6" value="0" required>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" id="load-character-btn">加载角色信息</button>
-                </div>
-                <div class="form-row">
-                    <input type="number" id="modify-star-soul" placeholder="星魂(0-6)" min="0" max="6">
-                    <input type="number" id="modify-level" placeholder="等级(1-80)" min="1" max="80">
-                    <input type="number" id="modify-favor" placeholder="好感度(0-10)" min="0" max="10">
-                </div>
-                <div class="form-row">
-                    <input type="datetime-local" id="modify-join-time" placeholder="获得时间">
-                    <span class="hint">可不填，保持原值</span>
-                </div>
-                <div class="form-row">
-                    <button type="submit">修改角色</button>
-                </div>
-            </form>
-            <div id="modify-results" class="result-section" style="display: none;">
-                <h3>操作结果</h3>
-                <div id="modify-content"></div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="level">角色等级 (1-80)</label>
+                                <input type="number" class="form-control" id="level" min="1" max="80" value="1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="favor">好感度 (0-10)</label>
+                                <input type="number" class="form-control" id="favor" min="0" max="10" value="5" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">添加角色</button>
+                </form>
             </div>
         </div>
 
-        <!-- 角色删除区块 -->
-        <div class="module-block" id="delete-character-block">
-            <div class="module-title">角色删除</div>
-            <form id="delete-character-form">
-                <div class="form-row">
-                    <div class="autocomplete">
-                        <input type="text" id="delete-character-name" placeholder="角色名称" required>
-                        <div id="delete-autocomplete" class="autocomplete-list"></div>
+        <!-- 角色列表 -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">我的角色列表</h5>
+                <div id="characterList" class="character-list">
+                    <div class="loading">
+                        <div class="spinner-border loading-spinner" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
                     </div>
-                    <button type="submit" style="background: #f44336;">删除角色</button>
                 </div>
-            </form>
-            <div id="delete-results" class="result-section" style="display: none;">
-                <h3>操作结果</h3>
-                <div id="delete-content"></div>
             </div>
         </div>
+
+        <!-- 提示信息 -->
+        <div id="alertContainer"></div>
     </div>
 
     <script>
-        window.onload = function() {
-            checkAuth();
-            loadAllCharacters();
-            setupAutocomplete();
-            setupFormHandlers();
-        };
-
+        // 全局变量
+        let currentUser = null;
         let allCharacters = [];
-        let userCharacters = [];
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            checkLoginStatus();
+            // 加载所有角色
+            loadAllCharacters();
+            // 加载用户角色列表
+            loadUserCharacters();
+        });
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                showAlert('请先登录', 'danger');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            // 兼容player_data_query.html的数据结构
+            let parsedData = JSON.parse(userData);
+            let userObj = parsedData.user || parsedData;
+            currentUser = userObj;
+            document.getElementById('userInfo').innerHTML = `
+                <p>用户名：${currentUser.username}</p>
+                <p>用户类型：${currentUser.user_type}</p>
+            `;
+        }
 
         // 加载所有角色
         async function loadAllCharacters() {
             try {
                 const response = await fetch('http://localhost:5000/api/characters');
+                if (!response.ok) throw new Error('获取角色列表失败');
                 allCharacters = await response.json();
+                
+                const select = document.getElementById('characterSelect');
+                select.innerHTML = '<option value="">请选择角色</option>';
+                allCharacters.forEach(char => {
+                    select.innerHTML += `<option value="${char.character_id}">${char.name}</option>`;
+                });
             } catch (error) {
-                console.error('加载角色列表失败:', error);
+                showAlert(error.message, 'danger');
             }
         }
 
-        // 设置自动补全
-        function setupAutocomplete() {
-            setupAutocompleteForInput('add-character-name', 'add-autocomplete');
-            setupAutocompleteForInput('modify-character-name', 'modify-autocomplete');
-            setupAutocompleteForInput('delete-character-name', 'delete-autocomplete');
-        }
-
-        function setupAutocompleteForInput(inputId, listId) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(listId);
+        // 加载用户角色列表
+        async function loadUserCharacters() {
+            if (!currentUser) return;
             
-            input.addEventListener('input', function() {
-                const val = this.value.trim();
-                list.innerHTML = '';
-                if (!val) return;
+            const loading = document.querySelector('.loading');
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}`);
+                if (!response.ok) throw new Error('获取用户角色列表失败');
+                const characters = await response.json();
                 
-                const matches = allCharacters.filter(c => c.name.includes(val));
-                matches.slice(0, 10).forEach(c => {
-                    const div = document.createElement('div');
-                    div.className = 'autocomplete-item';
-                    div.textContent = c.name;
-                    div.onclick = function() {
-                        input.value = c.name;
-                        list.innerHTML = '';
-                    };
-                    list.appendChild(div);
+                const characterList = document.getElementById('characterList');
+                if (characters.length === 0) {
+                    characterList.innerHTML = '<p class="text-center">暂无角色</p>';
+                    return;
+                }
+
+                let html = '';
+                characters.forEach(char => {
+                    const character = allCharacters.find(c => c.character_id === char.character_id);
+                    if (character) {
+                        html += `
+                            <div class="character-item">
+                                <h5>${character.name}</h5>
+                                <p>星魂等级：${char.star_soul}</p>
+                                <p>角色等级：${char.level}</p>
+                                <p>好感度：${char.favor}</p>
+                                <p>战力：${char.power}</p>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCharacter(${char.character_id})">删除</button>
+                            </div>
+                        `;
+                    }
                 });
-            });
-
-            input.addEventListener('blur', function() {
-                setTimeout(() => { list.innerHTML = ''; }, 200);
-            });
-        }
-
-        // 设置表单处理
-        function setupFormHandlers() {
-            // 添加角色
-            document.getElementById('add-character-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await addCharacter();
-            });
-
-            // 修改角色
-            document.getElementById('modify-character-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await modifyCharacter();
-            });
-
-            // 删除角色
-            document.getElementById('delete-character-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await deleteCharacter();
-            });
-
-            // 加载角色信息按钮
-            document.getElementById('load-character-btn').addEventListener('click', async function() {
-                await loadCharacterInfo();
-            });
+                characterList.innerHTML = html;
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            } finally {
+                loading.style.display = 'none';
+            }
         }
 
         // 添加角色
-        async function addCharacter() {
-            const characterName = document.getElementById('add-character-name').value.trim();
-            const starSoulValue = document.getElementById('add-star-soul').value;
-            const levelValue = document.getElementById('add-level').value;
-            const favorValue = document.getElementById('add-favor').value;
-            const joinTime = document.getElementById('add-join-time').value || null;
+        document.getElementById('addCharacterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            // 设置默认值
-            const starSoul = starSoulValue ? parseInt(starSoulValue) : 0;
-            const level = levelValue ? parseInt(levelValue) : 1;
-            const favor = favorValue ? parseInt(favorValue) : 5;
-
-            if (!characterName) {
-                alert('请输入角色名称');
-                return;
-            }
+            const characterId = document.getElementById('characterSelect').value;
+            const starSoul = document.getElementById('starSoul').value;
+            const level = document.getElementById('level').value;
+            const favor = document.getElementById('favor').value;
             
-            if (!levelValue) {
-                alert('请输入角色等级');
+            if (!characterId) {
+                showAlert('请选择角色', 'warning');
                 return;
             }
-
-            const character = allCharacters.find(c => c.name === characterName);
-            if (!character) {
-                alert('角色不存在，请从自动补全中选择');
-                return;
-            }
-
-            const userData = JSON.parse(localStorage.getItem('user'));
-            const userId = userData.user.user_id;
 
             try {
                 const response = await fetch('http://localhost:5000/api/user_characters', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
-                        user_id: userId,
-                        character_id: character.character_id,
-                        star_soul: starSoul,
-                        level: level,
-                        favor: favor,
-                        join_time: joinTime
+                        user_id: currentUser.user_id,
+                        character_id: parseInt(characterId),
+                        star_soul: parseInt(starSoul),
+                        level: parseInt(level),
+                        favor: parseInt(favor),
+                        join_time: new Date().toISOString()
                     })
                 });
 
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showResult('add', '添加成功！', 'success');
-                    document.getElementById('add-character-form').reset();
-                } else {
-                    showResult('add', result.error || '添加失败', 'error');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '添加角色失败');
                 }
+
+                showAlert('添加角色成功', 'success');
+                // 重置表单
+                this.reset();
+                // 重新加载角色列表
+                loadUserCharacters();
             } catch (error) {
-                showResult('add', '添加失败：' + error.message, 'error');
+                showAlert(error.message, 'danger');
             }
-        }
-
-        // 加载角色信息
-        async function loadCharacterInfo() {
-            const characterName = document.getElementById('modify-character-name').value.trim();
-            if (!characterName) {
-                alert('请输入角色名称');
-                return;
-            }
-
-            const character = allCharacters.find(c => c.name === characterName);
-            if (!character) {
-                alert('角色不存在，请从自动补全中选择');
-                return;
-            }
-
-            const userData = JSON.parse(localStorage.getItem('user'));
-            const userId = userData.user.user_id;
-
-            try {
-                const response = await fetch(`http://localhost:5000/api/user_characters/${userId}/${character.character_id}`);
-                
-                if (response.ok) {
-                    const userChar = await response.json();
-                    document.getElementById('modify-star-soul').value = userChar.star_soul;
-                    document.getElementById('modify-level').value = userChar.level;
-                    document.getElementById('modify-favor').value = userChar.favor;
-                    if (userChar.join_time) {
-                        const date = new Date(userChar.join_time);
-                        document.getElementById('modify-join-time').value = date.toISOString().slice(0, 16);
-                    }
-                    showResult('modify', '角色信息加载成功', 'success');
-                } else {
-                    showResult('modify', '该角色不在您的角色库中', 'error');
-                }
-            } catch (error) {
-                showResult('modify', '加载失败：' + error.message, 'error');
-            }
-        }
-
-        // 修改角色
-        async function modifyCharacter() {
-            const characterName = document.getElementById('modify-character-name').value.trim();
-            const starSoul = parseInt(document.getElementById('modify-star-soul').value);
-            const level = parseInt(document.getElementById('modify-level').value);
-            const favor = parseInt(document.getElementById('modify-favor').value);
-            const joinTime = document.getElementById('modify-join-time').value || null;
-
-            if (!characterName) {
-                alert('请输入角色名称');
-                return;
-            }
-
-            const character = allCharacters.find(c => c.name === characterName);
-            if (!character) {
-                alert('角色不存在，请从自动补全中选择');
-                return;
-            }
-
-            const userData = JSON.parse(localStorage.getItem('user'));
-            const userId = userData.user.user_id;
-
-            try {
-                const response = await fetch('http://localhost:5000/api/user_characters', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        character_id: character.character_id,
-                        star_soul: starSoul,
-                        level: level,
-                        favor: favor,
-                        join_time: joinTime
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showResult('modify', '修改成功！', 'success');
-                } else {
-                    showResult('modify', result.error || '修改失败', 'error');
-                }
-            } catch (error) {
-                showResult('modify', '修改失败：' + error.message, 'error');
-            }
-        }
+        });
 
         // 删除角色
-        async function deleteCharacter() {
-            const characterName = document.getElementById('delete-character-name').value.trim();
-            
-            if (!characterName) {
-                alert('请输入角色名称');
-                return;
-            }
-
-            if (!confirm(`确定要删除角色 "${characterName}" 吗？此操作不可撤销！`)) {
-                return;
-            }
-
-            const character = allCharacters.find(c => c.name === characterName);
-            if (!character) {
-                alert('角色不存在，请从自动补全中选择');
-                return;
-            }
-
-            const userData = JSON.parse(localStorage.getItem('user'));
-            const userId = userData.user.user_id;
+        async function deleteCharacter(characterId) {
+            if (!confirm('确定要删除这个角色吗？')) return;
 
             try {
-                const response = await fetch(`http://localhost:5000/api/user_characters/${userId}/${character.character_id}`, {
+                const response = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}/${characterId}`, {
                     method: 'DELETE'
                 });
 
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showResult('delete', '删除成功！', 'success');
-                    document.getElementById('delete-character-form').reset();
-                } else {
-                    showResult('delete', result.error || '删除失败', 'error');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '删除角色失败');
                 }
+
+                showAlert('删除角色成功', 'success');
+                // 重新加载角色列表
+                loadUserCharacters();
             } catch (error) {
-                showResult('delete', '删除失败：' + error.message, 'error');
+                showAlert(error.message, 'danger');
             }
         }
 
-        // 显示结果
-        function showResult(type, message, status) {
-            const resultsDiv = document.getElementById(`${type}-results`);
-            const contentDiv = document.getElementById(`${type}-content`);
-            
-            contentDiv.innerHTML = `
-                <div class="result-item" style="border-left-color: ${status === 'success' ? '#4caf50' : '#f44336'}">
-                    <p style="color: ${status === 'success' ? '#4caf50' : '#f44336'}">${message}</p>
-                </div>
+        // 显示提示信息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
-            resultsDiv.style.display = 'block';
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

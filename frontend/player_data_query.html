@@ -530,29 +530,37 @@
             if (characters.length === 0) {
                 contentDiv.innerHTML = '<p>未找到角色数据</p>';
             } else {
-                // 获取当前用户拥有的角色列表
-                const user = getCurrentUser();
+                // 每次都重新获取当前用户拥有的角色列表
+                let user = getCurrentUser();
                 let ownedCharacters = [];
-                
-                if (user && user.user) {
+                let ownedCharacterIds = [];
+                if (user && user.user_id) {
+                    try {
+                        const userCharsResponse = await fetch(`http://localhost:5000/api/user_characters/${user.user_id}`);
+                        if (userCharsResponse.ok) {
+                            ownedCharacters = await userCharsResponse.json();
+                            ownedCharacterIds = ownedCharacters.map(char => char.character_id);
+                        }
+                    } catch (error) {
+                        console.error('获取用户角色失败:', error);
+                    }
+                } else if (user && user.user && user.user.user_id) {
+                    // 兼容老结构
                     try {
                         const userCharsResponse = await fetch(`http://localhost:5000/api/user_characters/${user.user.user_id}`);
                         if (userCharsResponse.ok) {
                             ownedCharacters = await userCharsResponse.json();
+                            ownedCharacterIds = ownedCharacters.map(char => char.character_id);
                         }
                     } catch (error) {
                         console.error('获取用户角色失败:', error);
                     }
                 }
-                
-                const ownedCharacterIds = ownedCharacters.map(char => char.character_id);
-                
                 contentDiv.innerHTML = characters.map(char => {
                     const isOwned = ownedCharacterIds.includes(char.character_id);
                     const ownershipStatus = isOwned 
                         ? '<span class="ownership-status owned">已拥有</span>'
                         : '<span class="ownership-status not-owned">未拥有</span>';
-                        
                     return `
                         <div class="result-item">
                             <h4>${char.name} ${ownershipStatus}</h4>
@@ -572,7 +580,6 @@
                     `;
                 }).join('');
             }
-            
             resultsDiv.style.display = 'block';
         }
 
