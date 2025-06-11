@@ -183,11 +183,12 @@
                                 <p>好感度：${char.favor}</p>
                                 <p>战力：${char.power}</p>
                                 <button class="btn btn-danger btn-sm" onclick="deleteCharacter(${char.character_id})">删除</button>
+                                <button class="btn btn-secondary btn-sm ms-2" onclick="showEditModal(${char.character_id}, ${char.star_soul}, ${char.level}, ${char.favor})">修改</button>
                             </div>
                         `;
                     }
                 });
-                characterList.innerHTML = html;
+                characterList.innerHTML = html + getEditModalHtml();
             } catch (error) {
                 showAlert(error.message, 'danger');
             } finally {
@@ -261,6 +262,86 @@
                 showAlert(error.message, 'danger');
             }
         }
+
+        // 编辑模态框HTML
+        function getEditModalHtml() {
+            return `
+            <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">修改角色信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="editCharacterForm">
+                      <input type="hidden" id="editCharacterId">
+                      <div class="mb-3">
+                        <label for="editStarSoul" class="form-label">星魂等级 (0-6)</label>
+                        <input type="number" class="form-control" id="editStarSoul" min="0" max="6" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="editLevel" class="form-label">角色等级 (1-80)</label>
+                        <input type="number" class="form-control" id="editLevel" min="1" max="80" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="editFavor" class="form-label">好感度 (0-10)</label>
+                        <input type="number" class="form-control" id="editFavor" min="0" max="10" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        }
+
+        // 显示编辑模态框
+        window.showEditModal = function(characterId, starSoul, level, favor) {
+            document.getElementById('editCharacterId').value = characterId;
+            document.getElementById('editStarSoul').value = starSoul;
+            document.getElementById('editLevel').value = level;
+            document.getElementById('editFavor').value = favor;
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        // 编辑角色表单提交
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.getElementById('editCharacterForm');
+            if (editForm) {
+                editForm.onsubmit = async function(e) {
+                    e.preventDefault();
+                    const characterId = document.getElementById('editCharacterId').value;
+                    const starSoul = document.getElementById('editStarSoul').value;
+                    const level = document.getElementById('editLevel').value;
+                    const favor = document.getElementById('editFavor').value;
+                    try {
+                        const response = await fetch('http://localhost:5000/api/user_characters', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: currentUser.user_id,
+                                character_id: parseInt(characterId),
+                                star_soul: parseInt(starSoul),
+                                level: parseInt(level),
+                                favor: parseInt(favor)
+                            })
+                        });
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || '修改角色失败');
+                        }
+                        showAlert('角色信息修改成功', 'success');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                        modal.hide();
+                        loadUserCharacters();
+                    } catch (error) {
+                        showAlert(error.message, 'danger');
+                    }
+                }
+            }
+        });
 
         // 显示提示信息
         function showAlert(message, type) {
