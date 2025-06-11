@@ -110,14 +110,26 @@
             font-size: 0.9em;
         }
         .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #2196f3;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
             text-decoration: none;
-            font-size: 1.2em;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 100;
         }
         .back-link:hover {
-            color: #1976d2;
+            background: #1976d2;
+        }
+        .back-link:before {
+            content: "← ";
+            margin-right: 5px;
         }
         /* 拥有状态样式 */
         .ownership-status {
@@ -346,7 +358,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="home.html" class="back-link">← 返回主页</a>
+        <a href="home.html" class="back-link">返回主页</a>
         <div class="main-title">数据查询</div>
         
         <!-- 角色查询区块 -->

@@ -5,8 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>角色管理 - 崩坏星穹铁道角色管理系统</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 100;
+        }
+        .back-button:hover {
+            background: #1976d2;
+        }
+        .back-button:before {
+            content: "← ";
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
+    <a href="javascript:history.back()" class="back-button">返回</a>
     <div class="container">
         <div class="header">
             <h1>崩坏星穹铁道角色管理系统</h1>
