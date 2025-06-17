@@ -291,43 +291,15 @@
             }
             
             // 2. 机器学习分析结果
-            if (data.ml_analysis) {
+            if (data.ml_analysis && data.ml_analysis.feature_importance) {
                 html += `
                     <div class="analysis-card">
                         <h4>🤖 机器学习分析结果</h4>
-                        <p><strong>模型性能：</strong></p>
-                        <div class="stats-grid">
-                `;
-                
-                if (data.ml_analysis.ownership_model) {
-                    html += `
-                        <div class="stat-item">
-                            <div class="stat-value">${(data.ml_analysis.ownership_model.score * 100).toFixed(1)}%</div>
-                            <div class="stat-label">持有率预测准确度</div>
-                        </div>
-                    `;
-                }
-                
-                if (data.ml_analysis.favor_model) {
-                    html += `
-                        <div class="stat-item">
-                            <div class="stat-value">${(data.ml_analysis.favor_model.score * 100).toFixed(1)}%</div>
-                            <div class="stat-label">好感度预测准确度</div>
-                        </div>
-                    `;
-                }
-                
-                html += '</div>';
-                
-                if (data.ml_analysis.feature_importance) {
-                    html += `
                         <p><strong>🎯 影响角色受欢迎程度的关键因素（按重要性排序）：</strong></p>
-                    `;
-                    data.ml_analysis.feature_importance.forEach((feature, index) => {
-                        html += `<p>${index + 1}. ${feature.feature}: ${(feature.importance * 100).toFixed(1)}%</p>`;
-                    });
-                }
-                
+                `;
+                data.ml_analysis.feature_importance.forEach((feature, index) => {
+                    html += `<p>${index + 1}. ${feature.feature}: ${(feature.importance * 100).toFixed(1)}%</p>`;
+                });
                 html += '</div>';
             }
             

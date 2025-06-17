@@ -11,6 +11,12 @@ from sklearn.preprocessing import LabelEncoder
 import warnings
 warnings.filterwarnings('ignore')
 
+# 添加新的导入
+from sklearn.svm import SVR
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
 app = Flask(__name__)
 CORS(app)
 
@@ -1431,7 +1437,7 @@ def analyze_attribute_fate_distribution(conn):
     }
 
 def perform_ml_analysis(conn):
-    """使用随机森林进行机器学习分析"""
+    """使用SVR进行机器学习分析"""
     
     try:
         # 获取角色数据和相关统计
@@ -1488,6 +1494,10 @@ def perform_ml_analysis(conn):
         features = ['attribute_encoded', 'fate_encoded', 'camp_encoded']
         X = df[features]
         
+        # 创建特征缩放器
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+        
         # 分析持有率
         y_ownership = df['ownership_rate']
         ownership_model = None
@@ -1495,10 +1505,22 @@ def perform_ml_analysis(conn):
         
         if len(X) >= 3 and y_ownership.std() > 0:
             try:
-                X_train, X_test, y_train, y_test = train_test_split(X, y_ownership, test_size=0.3, random_state=42)
-                ownership_model = RandomForestRegressor(n_estimators=50, random_state=42)
-                ownership_model.fit(X_train, y_train)
-                ownership_score = ownership_model.score(X_test, y_test)
+                # 使用SVR模型
+                ownership_model = SVR(
+                    kernel='rbf',
+                    C=1.0,
+                    epsilon=0.1
+                )
+                
+                # 使用交叉验证评估模型
+                ownership_scores = cross_val_score(
+                    ownership_model, X_scaled, y_ownership,
+                    cv=5, scoring='r2'
+                )
+                ownership_score = np.mean(ownership_scores)
+                
+                # 训练最终模型
+                ownership_model.fit(X_scaled, y_ownership)
             except:
                 ownership_score = 0
         
@@ -1509,17 +1531,35 @@ def perform_ml_analysis(conn):
         
         if len(X) >= 3 and y_favor.std() > 0:
             try:
-                X_train, X_test, y_train, y_test = train_test_split(X, y_favor, test_size=0.3, random_state=42)
-                favor_model = RandomForestRegressor(n_estimators=50, random_state=42)
-                favor_model.fit(X_train, y_train)
-                favor_score = favor_model.score(X_test, y_test)
+                # 使用SVR模型
+                favor_model = SVR(
+                    kernel='rbf',
+                    C=1.0,
+                    epsilon=0.1
+                )
+                
+                # 使用交叉验证评估模型
+                favor_scores = cross_val_score(
+                    favor_model, X_scaled, y_favor,
+                    cv=5, scoring='r2'
+                )
+                favor_score = np.mean(favor_scores)
+                
+                # 训练最终模型
+                favor_model.fit(X_scaled, y_favor)
             except:
                 favor_score = 0
         
         # 特征重要性分析
         feature_importance = []
         if ownership_model is not None:
-            importance = ownership_model.feature_importances_
+            # SVR不直接提供特征重要性，我们使用基于排列的特征重要性
+            from sklearn.inspection import permutation_importance
+            importance = permutation_importance(
+                ownership_model, X_scaled, y_ownership,
+                n_repeats=10, random_state=42
+            ).importances_mean
+            
             feature_names = ['属性', '命途', '阵营']
             for i, imp in enumerate(importance):
                 feature_importance.append({
