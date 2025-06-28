@@ -196,7 +196,7 @@
         <div class="module-block" id="analysis-control-block">
             <div class="module-title">角色设计智能分析</div>
             <div class="form-row">
-                <button type="button" onclick="performAnalysis()">开始分析</button>
+                <!-- <button type="button" onclick="performAnalysis()">开始分析</button> -->
                 <span class="hint">系统将分析当前角色分布情况，并使用机器学习算法推荐最佳新角色设计</span>
             </div>
         </div>
@@ -211,16 +211,14 @@
     <script>
         window.onload = function() {
             checkAuth();
+            performAnalysis(); // 页面加载时自动分析
         };
 
         async function performAnalysis() {
-            const button = document.querySelector('button[onclick="performAnalysis()"]');
             const resultsDiv = document.getElementById('analysis-results');
             const contentDiv = document.getElementById('analysis-content');
             
             // 显示加载状态
-            button.disabled = true;
-            button.textContent = '分析中...';
             contentDiv.innerHTML = '<div class="loading">正在进行数据分析和机器学习计算，请稍候</div>';
             resultsDiv.style.display = 'block';
             
@@ -236,9 +234,6 @@
                 }
             } catch (error) {
                 contentDiv.innerHTML = `<div class="analysis-card"><h4>分析失败</h4><p>网络错误: ${error.message}</p></div>`;
-            } finally {
-                button.disabled = false;
-                button.textContent = '开始分析';
             }
         }
 

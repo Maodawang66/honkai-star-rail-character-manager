@@ -11,6 +11,11 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    background-image: url('../OIP-C.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: none;
 }
 
 .container {
@@ -82,4 +87,58 @@ a:hover {
     text-decoration: underline;
 }
 
-/* 移除 .search-box, .btn 的 flex 样式，恢复上方查询区块原样式 */ 
+/* 移除 .search-box, .btn 的 flex 样式，恢复上方查询区块原样式 */
+
+.login-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.planner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.planner-header {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.planner-user {
+    margin-top: 10px;
+    font-size: 1.2em;
+    color: #666;
+}
+
+.planner-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.planner-button {
+    width: 220px;
+    padding: 15px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.planner-button:hover {
+    background-color: #1976d2;
+} 

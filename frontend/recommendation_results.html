@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>推荐结果 - 崩坏星穹铁道角色管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: calc(100% - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+        .main-title {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #1565c0;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        .recommendation-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .recommendation-section h4 {
+            color: #1976d2;
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+        }
+        .recommendation-item {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .recommendation-item h5 {
+            margin: 0 0 8px 0;
+            color: #1565c0;
+            font-size: 1.1em;
+        }
+        .recommendation-item p {
+            margin: 5px 0;
+            color: #333;
+            font-size: 0.95em;
+        }
+        .recommendation-score {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            margin: 5px 0;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .recommendation-reason {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #e65100;
+        }
+    </style>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="main-title">推荐结果</div>
+        <div id="recommendation-content"></div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            checkAuth();
+            fetchRecommendationResults();
+        };
+
+        let currentUser = null;
+
+        function getCurrentUser() {
+            if (!currentUser) {
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    const parsedData = JSON.parse(userData);
+                    currentUser = parsedData.user || parsedData;
+                }
+            }
+            return currentUser;
+        }
+
+        async function fetchRecommendationResults() {
+            const user = getCurrentUser();
+            if (!user) {
+                alert('请先登录');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/character-recommendation/${user.user_id}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayRecommendationResults(data);
+                } else {
+                    alert(data.error || '推荐失败');
+                }
+            } catch (error) {
+                alert('推荐失败：' + error.message);
+            }
+        }
+
+        function displayRecommendationResults(data) {
+            const content = document.getElementById('recommendation-content');
+            let html = '';
+
+            // 缺失标签推荐
+            if (data.missing_tags_recommendations && data.missing_tags_recommendations.length > 0) {
+                html += `
+                    <div class="recommendation-section">
+                        <h4>🎯 缺失标签推荐 (${data.missing_tags_recommendations.length}个)</h4>
+                        ${data.missing_tags_recommendations.map(item => `
+                            <div class="recommendation-item">
+                                <h5>${item.character_name}</h5>
+                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
+                                <div class="recommendation-reason">
+                                    <strong>推荐理由：</strong>可以补充您缺失的标签：${item.missing_tags.join(', ')}
+                                </div>
+                                <div class="tags">
+                                    <strong>角色标签：</strong>
+                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // 缺失阵营推荐
+            if (data.missing_camps_recommendations && data.missing_camps_recommendations.length > 0) {
+                html += `
+                    <div class="recommendation-section">
+                        <h4>🏛️ 缺失阵营推荐 (${data.missing_camps_recommendations.length}个)</h4>
+                        ${data.missing_camps_recommendations.map(item => `
+                            <div class="recommendation-item">
+                                <h5>${item.character_name}</h5>
+                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
+                                <div class="recommendation-reason">
+                                    <strong>推荐理由：</strong>可以补充您缺失的阵营：${item.camp_name}
+                                </div>
+                                <div class="tags">
+                                    <strong>角色标签：</strong>
+                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // 缺失属性命途组合推荐
+            if (data.missing_combinations_recommendations && data.missing_combinations_recommendations.length > 0) {
+                html += `
+                    <div class="recommendation-section">
+                        <h4>⚡ 缺失属性-命途组合推荐 (${data.missing_combinations_recommendations.length}个)</h4>
+                        ${data.missing_combinations_recommendations.map(item => `
+                            <div class="recommendation-item">
+                                <h5>${item.character_name}</h5>
+                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
+                                <div class="recommendation-reason">
+                                    <strong>推荐理由：</strong>可以补充您缺失的属性-命途组合：${item.attribute_name}-${item.fate_name}
+                                </div>
+                                <div class="tags">
+                                    <strong>角色标签：</strong>
+                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // 高持有率推荐
+            if (data.high_ownership_recommendations && data.high_ownership_recommendations.length > 0) {
+                html += `
+                    <div class="recommendation-section">
+                        <h4>🔥 高持有率推荐 (${data.high_ownership_recommendations.length}个)</h4>
+                        ${data.high_ownership_recommendations.map(item => `
+                            <div class="recommendation-item">
+                                <h5>${item.character_name}</h5>
+                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
+                                <span class="recommendation-score">持有率: ${item.ownership_rate}%</span>
+                                <div class="recommendation-reason">
+                                    <strong>推荐理由：</strong>该角色在全服玩家中持有率较高(${item.ownership_rate}%)，是热门角色
+                                </div>
+                                <div class="tags">
+                                    <strong>角色标签：</strong>
+                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // 预测高好感度推荐
+            if (data.predicted_high_favor_recommendations && data.predicted_high_favor_recommendations.length > 0) {
+                html += `
+                    <div class="recommendation-section">
+                        <h4>💖 预测高好感度推荐 (${data.predicted_high_favor_recommendations.length}个)</h4>
+                        ${data.predicted_high_favor_recommendations.map(item => `
+                            <div class="recommendation-item">
+                                <h5>${item.character_name}</h5>
+                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
+                                <span class="recommendation-score">预测好感度: ${item.predicted_favor}</span>
+                                <div class="recommendation-reason">
+                                    <strong>推荐理由：</strong>基于您的喜好分析，预测您会对此角色有较高好感度
+                                </div>
+                                <div class="tags">
+                                    <strong>角色标签：</strong>
+                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            if (html === '') {
+                html = '<p>暂无推荐角色，请先添加一些角色数据。</p>';
+            }
+
+            content.innerHTML = html;
+        }
+    </script>
+</body>
+</html> 

@@ -470,32 +470,67 @@ async function queryAllCharacters() {
 }
 
 function displayCharacterResults(characters) {
-    const resultsDiv = document.getElementById('character-results');
-    const contentDiv = document.getElementById('character-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
+    document.getElementById('modal-title').textContent = '角色查询结果';
     
     if (characters.length === 0) {
-        contentDiv.innerHTML = '<p>未找到角色数据</p>';
+        content.innerHTML = '<p>未找到角色数据</p>';
     } else {
-        contentDiv.innerHTML = characters.map(char => `
-            <div class="result-item">
-                <h4>${char.name}</h4>
-                <p><strong>简介：</strong>${char.description || '无'}</p>
-                <p><strong>技能：</strong>${char.skill || '无'}</p>
-                <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
-                <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
-                <p><strong>命途：</strong>${char.fate_name || '无'}</p>
-                <div class="tags">
-                    <strong>标签：</strong>
-                    ${char.tags && char.tags.length > 0 ? 
-                        char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                        '<span>无</span>'
-                    }
+        const pageSize = 10;
+        const totalPages = Math.ceil(characters.length / pageSize);
+        let currentPage = 1;
+
+        function renderPage(page) {
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, characters.length);
+            const pageData = characters.slice(startIndex, endIndex);
+            content.innerHTML = pageData.map(char => `
+                <div class="result-item">
+                    <h4>${char.name}</h4>
+                    <p><strong>简介：</strong>${char.description || '无'}</p>
+                    <p><strong>技能：</strong>${char.skill || '无'}</p>
+                    <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
+                    <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
+                    <p><strong>命途：</strong>${char.fate_name || '无'}</p>
+                    <div class="tags">
+                        <strong>标签：</strong>
+                        ${char.tags && char.tags.length > 0 ? 
+                            char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                            '<span>无</span>'
+                        }
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+            updatePagination(page, totalPages);
+            content.scrollTop = 0; // 滚动到顶部
+        }
+
+        function updatePagination(page, totalPages) {
+            document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+            document.getElementById('prev-page').disabled = page <= 1;
+            document.getElementById('next-page').disabled = page >= totalPages;
+        }
+
+        document.getElementById('prev-page').onclick = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        };
+
+        document.getElementById('next-page').onclick = function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        };
+
+        renderPage(currentPage);
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // BOSS查询功能
@@ -536,30 +571,65 @@ async function queryAllBosses() {
 }
 
 function displayBossResults(bosses) {
-    const resultsDiv = document.getElementById('boss-results');
-    const contentDiv = document.getElementById('boss-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
+    document.getElementById('modal-title').textContent = 'BOSS查询结果';
     
     if (bosses.length === 0) {
-        contentDiv.innerHTML = '<p>未找到BOSS数据</p>';
+        content.innerHTML = '<p>未找到BOSS数据</p>';
     } else {
-        contentDiv.innerHTML = bosses.map(boss => `
-            <div class="result-item">
-                <h4>${boss.name}</h4>
-                <p><strong>简介：</strong>${boss.description || '无'}</p>
-                <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
-                <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
-                <div class="tags">
-                    <strong>标签：</strong>
-                    ${boss.tags && boss.tags.length > 0 ? 
-                        boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                        '<span>无</span>'
-                    }
+        const pageSize = 10;
+        const totalPages = Math.ceil(bosses.length / pageSize);
+        let currentPage = 1;
+
+        function renderPage(page) {
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, bosses.length);
+            const pageData = bosses.slice(startIndex, endIndex);
+            content.innerHTML = pageData.map(boss => `
+                <div class="result-item">
+                    <h4>${boss.name}</h4>
+                    <p><strong>简介：</strong>${boss.description || '无'}</p>
+                    <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
+                    <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
+                    <div class="tags">
+                        <strong>标签：</strong>
+                        ${boss.tags && boss.tags.length > 0 ? 
+                            boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                            '<span>无</span>'
+                        }
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+            updatePagination(page, totalPages);
+            content.scrollTop = 0; // 滚动到顶部
+        }
+
+        function updatePagination(page, totalPages) {
+            document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+            document.getElementById('prev-page').disabled = page <= 1;
+            document.getElementById('next-page').disabled = page >= totalPages;
+        }
+
+        document.getElementById('prev-page').onclick = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        };
+
+        document.getElementById('next-page').onclick = function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        };
+
+        renderPage(currentPage);
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 环境查询功能
@@ -600,13 +670,13 @@ async function queryAllEnvironments() {
 }
 
 function displayEnvironmentResults(environments) {
-    const resultsDiv = document.getElementById('environment-results');
-    const contentDiv = document.getElementById('environment-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     if (environments.length === 0) {
-        contentDiv.innerHTML = '<p>未找到环境数据</p>';
+        content.innerHTML = '<p>未找到环境数据</p>';
     } else {
-        contentDiv.innerHTML = environments.map(env => `
+        content.innerHTML = environments.map(env => `
             <div class="result-item">
                 <h4>${env.name}</h4>
                 <p><strong>buff效果：</strong>${env.buff || '无'}</p>
@@ -621,7 +691,8 @@ function displayEnvironmentResults(environments) {
         `).join('');
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 属性查询功能
@@ -662,13 +733,13 @@ async function queryAllAttributes() {
 }
 
 function displayAttributeResults(attributes) {
-    const resultsDiv = document.getElementById('attribute-results');
-    const contentDiv = document.getElementById('attribute-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     if (attributes.length === 0) {
-        contentDiv.innerHTML = '<p>未找到属性数据</p>';
+        content.innerHTML = '<p>未找到属性数据</p>';
     } else {
-        contentDiv.innerHTML = attributes.map(attr => `
+        content.innerHTML = attributes.map(attr => `
             <div class="result-item">
                 <h4>${attr.attribute_name}</h4>
                 <p><strong>属性ID：</strong>${attr.attribute_id}</p>
@@ -676,7 +747,8 @@ function displayAttributeResults(attributes) {
         `).join('');
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 命途查询功能
@@ -717,13 +789,13 @@ async function queryAllFates() {
 }
 
 function displayFateResults(fates) {
-    const resultsDiv = document.getElementById('fate-results');
-    const contentDiv = document.getElementById('fate-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     if (fates.length === 0) {
-        contentDiv.innerHTML = '<p>未找到命途数据</p>';
+        content.innerHTML = '<p>未找到命途数据</p>';
     } else {
-        contentDiv.innerHTML = fates.map(fate => `
+        content.innerHTML = fates.map(fate => `
             <div class="result-item">
                 <h4>${fate.fate_name}</h4>
                 <p><strong>命途ID：</strong>${fate.fate_id}</p>
@@ -731,7 +803,8 @@ function displayFateResults(fates) {
         `).join('');
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 阵营查询功能
@@ -772,13 +845,13 @@ async function queryAllCamps() {
 }
 
 function displayCampResults(camps) {
-    const resultsDiv = document.getElementById('camp-results');
-    const contentDiv = document.getElementById('camp-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     if (camps.length === 0) {
-        contentDiv.innerHTML = '<p>未找到阵营数据</p>';
+        content.innerHTML = '<p>未找到阵营数据</p>';
     } else {
-        contentDiv.innerHTML = camps.map(camp => `
+        content.innerHTML = camps.map(camp => `
             <div class="result-item">
                 <h4>${camp.camp_name}</h4>
                 <p><strong>阵营ID：</strong>${camp.camp_id}</p>
@@ -786,7 +859,8 @@ function displayCampResults(camps) {
         `).join('');
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 标签查询功能
@@ -827,13 +901,13 @@ async function queryAllTags() {
 }
 
 function displayTagResults(tags) {
-    const resultsDiv = document.getElementById('tag-results');
-    const contentDiv = document.getElementById('tag-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     if (tags.length === 0) {
-        contentDiv.innerHTML = '<p>未找到标签数据</p>';
+        content.innerHTML = '<p>未找到标签数据</p>';
     } else {
-        contentDiv.innerHTML = tags.map(tag => `
+        content.innerHTML = tags.map(tag => `
             <div class="result-item">
                 <h4>${tag.name}</h4>
                 <p><strong>标签ID：</strong>${tag.tag_id}</p>
@@ -841,7 +915,8 @@ function displayTagResults(tags) {
         `).join('');
     }
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 // 战力排行查询功能
@@ -941,6 +1016,7 @@ function displayRankingModal() {
     
     updatePagination();
     modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
 
 function updatePagination() {
@@ -995,12 +1071,12 @@ async function queryCharacterOwnership() {
 }
 
 function displayOwnershipResults(data, characterName) {
-    const resultsDiv = document.getElementById('ownership-results');
-    const contentDiv = document.getElementById('ownership-content');
+    const modal = document.getElementById('power-ranking-modal');
+    const content = document.getElementById('ranking-content');
     
     const ownershipRate = ((data.owners / data.total_players) * 100).toFixed(2);
     
-    contentDiv.innerHTML = `
+    content.innerHTML = `
         <div class="result-item">
             <h4>${characterName} 持有率统计</h4>
             <div class="ownership-rate">${ownershipRate}%</div>
@@ -1012,7 +1088,8 @@ function displayOwnershipResults(data, characterName) {
         </div>
     `;
     
-    resultsDiv.style.display = 'block';
+    modal.style.display = 'block';
+    content.scrollTop = 0; // 打开弹窗时滚动到顶部
 }
     </script>
 </body>

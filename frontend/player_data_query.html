@@ -430,7 +430,7 @@
         <div class="module-block" id="character-recommendation-query-block">
             <div class="module-title">推荐抽取角色</div>
             <div class="query-row">
-                <button type="button" onclick="queryCharacterRecommendation()">推荐抽取角色</button>
+                <button type="button" onclick="redirectToRecommendationPage()">推荐抽取角色</button>
             </div>
         </div>
     </div>
@@ -524,63 +524,73 @@
         }
 
         async function displayCharacterResults(characters) {
-            const resultsDiv = document.getElementById('character-results');
-            const contentDiv = document.getElementById('character-content');
+            const modal = document.getElementById('power-ranking-modal');
+            const content = document.getElementById('ranking-content');
+            document.getElementById('modal-title').textContent = '角色查询结果';
+            
+            let ownedCharacterIds = []; // 初始化ownedCharacterIds
             
             if (characters.length === 0) {
-                contentDiv.innerHTML = '<p>未找到角色数据</p>';
+                content.innerHTML = '<p>未找到角色数据</p>';
             } else {
-                // 每次都重新获取当前用户拥有的角色列表
-                let user = getCurrentUser();
-                let ownedCharacters = [];
-                let ownedCharacterIds = [];
-                if (user && user.user_id) {
-                    try {
-                        const userCharsResponse = await fetch(`http://localhost:5000/api/user_characters/${user.user_id}`);
-                        if (userCharsResponse.ok) {
-                            ownedCharacters = await userCharsResponse.json();
-                            ownedCharacterIds = ownedCharacters.map(char => char.character_id);
-                        }
-                    } catch (error) {
-                        console.error('获取用户角色失败:', error);
-                    }
-                } else if (user && user.user && user.user.user_id) {
-                    // 兼容老结构
-                    try {
-                        const userCharsResponse = await fetch(`http://localhost:5000/api/user_characters/${user.user.user_id}`);
-                        if (userCharsResponse.ok) {
-                            ownedCharacters = await userCharsResponse.json();
-                            ownedCharacterIds = ownedCharacters.map(char => char.character_id);
-                        }
-                    } catch (error) {
-                        console.error('获取用户角色失败:', error);
-                    }
-                }
-                contentDiv.innerHTML = characters.map(char => {
-                    const isOwned = ownedCharacterIds.includes(char.character_id);
-                    const ownershipStatus = isOwned 
-                        ? '<span class="ownership-status owned">已拥有</span>'
-                        : '<span class="ownership-status not-owned">未拥有</span>';
-                    return `
-                        <div class="result-item">
-                            <h4>${char.name} ${ownershipStatus}</h4>
-                            <p><strong>简介：</strong>${char.description || '无'}</p>
-                            <p><strong>技能：</strong>${char.skill || '无'}</p>
-                            <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
-                            <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
-                            <p><strong>命途：</strong>${char.fate_name || '无'}</p>
-                            <div class="tags">
-                                <strong>标签：</strong>
-                                ${char.tags && char.tags.length > 0 ? 
-                                    char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                    '<span>无</span>'
-                                }
+                const pageSize = 10;
+                const totalPages = Math.ceil(characters.length / pageSize);
+                let currentPage = 1;
+
+                function renderPage(page) {
+                    const startIndex = (page - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + pageSize, characters.length);
+                    const pageData = characters.slice(startIndex, endIndex);
+                    content.innerHTML = pageData.map(char => {
+                        const isOwned = ownedCharacterIds.includes(char.character_id);
+                        const ownershipStatus = isOwned 
+                            ? '<span class="ownership-status owned">已拥有</span>'
+                            : '<span class="ownership-status not-owned">未拥有</span>';
+                        return `
+                            <div class="result-item">
+                                <h4>${char.name} ${ownershipStatus}</h4>
+                                <p><strong>简介：</strong>${char.description || '无'}</p>
+                                <p><strong>技能：</strong>${char.skill || '无'}</p>
+                                <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
+                                <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
+                                <p><strong>命途：</strong>${char.fate_name || '无'}</p>
+                                <div class="tags">
+                                    <strong>标签：</strong>
+                                    ${char.tags && char.tags.length > 0 ? 
+                                        char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                        '<span>无</span>'
+                                    }
+                                </div>
                             </div>
-                        </div>
-                    `;
-                }).join('');
+                        `;
+                    }).join('');
+                    updatePagination(page, totalPages);
+                }
+
+                function updatePagination(page, totalPages) {
+                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+                    document.getElementById('prev-page').disabled = page <= 1;
+                    document.getElementById('next-page').disabled = page >= totalPages;
+                }
+
+                document.getElementById('prev-page').onclick = function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderPage(currentPage);
+                    }
+                };
+
+                document.getElementById('next-page').onclick = function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderPage(currentPage);
+                    }
+                };
+
+                renderPage(currentPage);
             }
-            resultsDiv.style.display = 'block';
+            
+            modal.style.display = 'block';
         }
 
         // BOSS查询功能
@@ -621,30 +631,63 @@
         }
 
         function displayBossResults(bosses) {
-            const resultsDiv = document.getElementById('boss-results');
-            const contentDiv = document.getElementById('boss-content');
+            const modal = document.getElementById('power-ranking-modal');
+            const content = document.getElementById('ranking-content');
+            document.getElementById('modal-title').textContent = 'BOSS查询结果';
             
             if (bosses.length === 0) {
-                contentDiv.innerHTML = '<p>未找到BOSS数据</p>';
+                content.innerHTML = '<p>未找到BOSS数据</p>';
             } else {
-                contentDiv.innerHTML = bosses.map(boss => `
-                    <div class="result-item">
-                        <h4>${boss.name}</h4>
-                        <p><strong>简介：</strong>${boss.description || '无'}</p>
-                        <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
-                        <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
-                        <div class="tags">
-                            <strong>标签：</strong>
-                            ${boss.tags && boss.tags.length > 0 ? 
-                                boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                '<span>无</span>'
-                            }
+                const pageSize = 10;
+                const totalPages = Math.ceil(bosses.length / pageSize);
+                let currentPage = 1;
+
+                function renderPage(page) {
+                    const startIndex = (page - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + pageSize, bosses.length);
+                    const pageData = bosses.slice(startIndex, endIndex);
+                    content.innerHTML = pageData.map(boss => `
+                        <div class="result-item">
+                            <h4>${boss.name}</h4>
+                            <p><strong>简介：</strong>${boss.description || '无'}</p>
+                            <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
+                            <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
+                            <div class="tags">
+                                <strong>标签：</strong>
+                                ${boss.tags && boss.tags.length > 0 ? 
+                                    boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                    '<span>无</span>'
+                                }
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                    updatePagination(page, totalPages);
+                }
+
+                function updatePagination(page, totalPages) {
+                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+                    document.getElementById('prev-page').disabled = page <= 1;
+                    document.getElementById('next-page').disabled = page >= totalPages;
+                }
+
+                document.getElementById('prev-page').onclick = function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderPage(currentPage);
+                    }
+                };
+
+                document.getElementById('next-page').onclick = function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderPage(currentPage);
+                    }
+                };
+
+                renderPage(currentPage);
             }
             
-            resultsDiv.style.display = 'block';
+            modal.style.display = 'block';
         }
 
         // 环境查询功能
@@ -685,28 +728,61 @@
         }
 
         function displayEnvironmentResults(environments) {
-            const resultsDiv = document.getElementById('environment-results');
-            const contentDiv = document.getElementById('environment-content');
+            const modal = document.getElementById('power-ranking-modal');
+            const content = document.getElementById('ranking-content');
+            document.getElementById('modal-title').textContent = '环境查询结果';
             
             if (environments.length === 0) {
-                contentDiv.innerHTML = '<p>未找到环境数据</p>';
+                content.innerHTML = '<p>未找到环境数据</p>';
             } else {
-                contentDiv.innerHTML = environments.map(env => `
-                    <div class="result-item">
-                        <h4>${env.name}</h4>
-                        <p><strong>buff效果：</strong>${env.buff || '无'}</p>
-                        <div class="tags">
-                            <strong>标签：</strong>
-                            ${env.tags && env.tags.length > 0 ? 
-                                env.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                '<span>无</span>'
-                            }
+                const pageSize = 10;
+                const totalPages = Math.ceil(environments.length / pageSize);
+                let currentPage = 1;
+
+                function renderPage(page) {
+                    const startIndex = (page - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + pageSize, environments.length);
+                    const pageData = environments.slice(startIndex, endIndex);
+                    content.innerHTML = pageData.map(env => `
+                        <div class="result-item">
+                            <h4>${env.name}</h4>
+                            <p><strong>buff效果：</strong>${env.buff || '无'}</p>
+                            <div class="tags">
+                                <strong>标签：</strong>
+                                ${env.tags && env.tags.length > 0 ? 
+                                    env.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                    '<span>无</span>'
+                                }
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                    updatePagination(page, totalPages);
+                }
+
+                function updatePagination(page, totalPages) {
+                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+                    document.getElementById('prev-page').disabled = page <= 1;
+                    document.getElementById('next-page').disabled = page >= totalPages;
+                }
+
+                document.getElementById('prev-page').onclick = function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderPage(currentPage);
+                    }
+                };
+
+                document.getElementById('next-page').onclick = function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderPage(currentPage);
+                    }
+                };
+
+                renderPage(currentPage);
             }
             
-            resultsDiv.style.display = 'block';
+            modal.style.display = 'block';
         }
 
         // 战力排行查询功能
@@ -885,151 +961,8 @@
         }
 
         // 角色推荐功能
-        async function queryCharacterRecommendation() {
-            const user = getCurrentUser();
-            if (!user) {
-                alert('请先登录');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`http://localhost:5000/api/character-recommendation/${user.user_id}`);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    displayRecommendationResults(data);
-                } else {
-                    alert(data.error || '推荐失败');
-                }
-            } catch (error) {
-                alert('推荐失败：' + error.message);
-            }
-        }
-
-        function displayRecommendationResults(data) {
-            const modal = document.getElementById('character-recommendation-modal');
-            const content = document.getElementById('recommendation-content');
-            
-            let html = '';
-            
-            // 缺失标签推荐
-            if (data.missing_tags_recommendations && data.missing_tags_recommendations.length > 0) {
-                html += `
-                    <div class="recommendation-section">
-                        <h4>🎯 缺失标签推荐 (${data.missing_tags_recommendations.length}个)</h4>
-                        ${data.missing_tags_recommendations.map(item => `
-                            <div class="recommendation-item">
-                                <h5>${item.character_name}</h5>
-                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
-                                <div class="recommendation-reason">
-                                    <strong>推荐理由：</strong>可以补充您缺失的标签：${item.missing_tags.join(', ')}
-                                </div>
-                                <div class="tags">
-                                    <strong>角色标签：</strong>
-                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // 缺失阵营推荐
-            if (data.missing_camps_recommendations && data.missing_camps_recommendations.length > 0) {
-                html += `
-                    <div class="recommendation-section">
-                        <h4>🏛️ 缺失阵营推荐 (${data.missing_camps_recommendations.length}个)</h4>
-                        ${data.missing_camps_recommendations.map(item => `
-                            <div class="recommendation-item">
-                                <h5>${item.character_name}</h5>
-                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
-                                <div class="recommendation-reason">
-                                    <strong>推荐理由：</strong>可以补充您缺失的阵营：${item.camp_name}
-                                </div>
-                                <div class="tags">
-                                    <strong>角色标签：</strong>
-                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // 缺失属性命途组合推荐
-            if (data.missing_combinations_recommendations && data.missing_combinations_recommendations.length > 0) {
-                html += `
-                    <div class="recommendation-section">
-                        <h4>⚡ 缺失属性-命途组合推荐 (${data.missing_combinations_recommendations.length}个)</h4>
-                        ${data.missing_combinations_recommendations.map(item => `
-                            <div class="recommendation-item">
-                                <h5>${item.character_name}</h5>
-                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
-                                <div class="recommendation-reason">
-                                    <strong>推荐理由：</strong>可以补充您缺失的属性-命途组合：${item.attribute_name}-${item.fate_name}
-                                </div>
-                                <div class="tags">
-                                    <strong>角色标签：</strong>
-                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // 高持有率推荐
-            if (data.high_ownership_recommendations && data.high_ownership_recommendations.length > 0) {
-                html += `
-                    <div class="recommendation-section">
-                        <h4>🔥 高持有率推荐 (${data.high_ownership_recommendations.length}个)</h4>
-                        ${data.high_ownership_recommendations.map(item => `
-                            <div class="recommendation-item">
-                                <h5>${item.character_name}</h5>
-                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
-                                <span class="recommendation-score">持有率: ${item.ownership_rate}%</span>
-                                <div class="recommendation-reason">
-                                    <strong>推荐理由：</strong>该角色在全服玩家中持有率较高(${item.ownership_rate}%)，是热门角色
-                                </div>
-                                <div class="tags">
-                                    <strong>角色标签：</strong>
-                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // 预测高好感度推荐
-            if (data.predicted_high_favor_recommendations && data.predicted_high_favor_recommendations.length > 0) {
-                html += `
-                    <div class="recommendation-section">
-                        <h4>💖 预测高好感度推荐 (${data.predicted_high_favor_recommendations.length}个)</h4>
-                        ${data.predicted_high_favor_recommendations.map(item => `
-                            <div class="recommendation-item">
-                                <h5>${item.character_name}</h5>
-                                <p><strong>阵营：</strong>${item.camp_name} | <strong>属性：</strong>${item.attribute_name} | <strong>命途：</strong>${item.fate_name}</p>
-                                <span class="recommendation-score">预测好感度: ${item.predicted_favor}</span>
-                                <div class="recommendation-reason">
-                                    <strong>推荐理由：</strong>基于您的喜好分析，预测您会对此角色有较高好感度
-                                </div>
-                                <div class="tags">
-                                    <strong>角色标签：</strong>
-                                    ${item.character_tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            if (html === '') {
-                html = '<p>暂无推荐角色，请先添加一些角色数据。</p>';
-            }
-            
-            content.innerHTML = html;
-            modal.style.display = 'block';
+        function redirectToRecommendationPage() {
+            window.location.href = 'recommendation_results.html';
         }
 
         function closeRecommendationModal() {

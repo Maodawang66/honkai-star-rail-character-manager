@@ -5,13 +5,70 @@
     <title>玩家主页 - 崩坏星穹铁道角色管理系统</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/auth.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 80px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+        .nav a {
+            display: block;
+            margin: 10px 0;
+            padding: 10px 20px;
+            background: #2196f3;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+        .nav a:hover {
+            background: #1976d2;
+        }
+        #user-info {
+            margin-bottom: 20px;
+        }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 100;
+        }
+        .logout-button:hover {
+            background: #1976d2;
+        }
+        .container h2, .container .nav a, .container #user-info span {
+            font-size: 1.2em;
+        }
+    </style>
 </head>
 <body>
+    <button class="logout-button" onclick="logout()">退出登录</button>
     <div class="container">
-        <h2>欢迎来到崩坏星穹铁道角色管理系统</h2>
+        <h2>玩家管理界面</h2>
         <div id="user-info">
             <span>当前用户：<span id="username"></span></span>
-            <button onclick="logout()">退出登录</button>
         </div>
         <div class="nav">
             <a href="player_character_manage.html">信息维护</a>

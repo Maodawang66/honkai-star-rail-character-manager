@@ -16,6 +16,10 @@ from sklearn.svm import SVR
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 CORS(app)
@@ -880,14 +884,16 @@ def add_user_character():
 def update_user_character():
     try:
         data = request.json
+        logging.debug(f'Received data for update: {data}')
         user_id = data.get('user_id')
         character_id = data.get('character_id')
         star_soul = data.get('star_soul')
         level = data.get('level')
         favor = data.get('favor')
-        join_time = data.get('join_time')
+        power = data.get('power')
         
         if not user_id or not character_id:
+            logging.error('User ID or Character ID is missing')
             return jsonify({'error': '用户ID和角色ID不能为空'}), 400
         
         conn = get_db()
@@ -896,6 +902,7 @@ def update_user_character():
         existing = conn.execute('SELECT * FROM User_Character WHERE user_id=? AND character_id=?', 
                                (user_id, character_id)).fetchone()
         if not existing:
+            logging.error('Character does not exist')
             conn.close()
             return jsonify({'error': '该角色不存在'}), 404
         
@@ -905,6 +912,7 @@ def update_user_character():
         
         if star_soul is not None:
             if not (0 <= star_soul <= 6):
+                logging.error('Star soul out of range')
                 return jsonify({'error': '星魂必须在0-6之间'}), 400
             update_fields.append('star_soul = ?')
             params.append(star_soul)
@@ -913,6 +921,7 @@ def update_user_character():
             
         if level is not None:
             if not (1 <= level <= 80):
+                logging.error('Level out of range')
                 return jsonify({'error': '等级必须在1-80之间'}), 400
             update_fields.append('level = ?')
             params.append(level)
@@ -921,26 +930,29 @@ def update_user_character():
             
         if favor is not None:
             if not (0 <= favor <= 10):
+                logging.error('Favor out of range')
                 return jsonify({'error': '好感度必须在0-10之间'}), 400
             update_fields.append('favor = ?')
             params.append(favor)
             
-        if join_time is not None:
-            update_fields.append('join_time = ?')
-            params.append(join_time)
-        
-        # 重新计算战力
-        power = int(level * (1 + star_soul * 0.15))
-        update_fields.append('power = ?')
-        params.append(power)
+        if power is not None:
+            update_fields.append('power = ?')
+            params.append(power)
+        else:
+            # 重新计算战力
+            power = int(level * (1 + star_soul * 0.15))
+            update_fields.append('power = ?')
+            params.append(power)
         
         # 添加WHERE条件参数
         params.extend([user_id, character_id])
         
         if update_fields:
             sql = f"UPDATE User_Character SET {', '.join(update_fields)} WHERE user_id = ? AND character_id = ?"
+            logging.debug(f'Executing SQL: {sql} with params: {params}')
             conn.execute(sql, params)
             conn.commit()
+            logging.info('Character updated successfully')
         
         conn.close()
         
@@ -950,6 +962,7 @@ def update_user_character():
         })
         
     except Exception as e:
+        logging.error(f'Update failed: {str(e)}')
         return jsonify({'error': f'修改失败: {str(e)}'}), 500
 
 # 删除用户角色

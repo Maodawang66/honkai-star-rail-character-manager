@@ -83,14 +83,29 @@
             </div>
         </div>
 
-        <!-- 角色列表 -->
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">我的角色列表</h5>
-                <div id="characterList" class="character-list">
-                    <div class="loading">
-                        <div class="spinner-border loading-spinner" role="status">
-                            <span class="visually-hidden">加载中...</span>
+        <!-- 查看角色列表按钮 -->
+        <button class="btn btn-secondary mt-4" onclick="showCharacterListModal()">查看角色列表</button>
+
+        <!-- 角色列表弹窗 -->
+        <div class="modal fade" id="characterListModal" tabindex="-1" aria-labelledby="characterListModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="characterListModalLabel">角色列表</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="characterList" class="character-list">
+                            <div class="loading">
+                                <div class="spinner-border loading-spinner" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pagination mt-3">
+                            <button class="btn btn-secondary" id="prevPage" onclick="changePage(-1)">上一页</button>
+                            <span id="pageInfo" class="mx-3">第 1 页</span>
+                            <button class="btn btn-secondary" id="nextPage" onclick="changePage(1)">下一页</button>
                         </div>
                     </div>
                 </div>
@@ -105,6 +120,8 @@
         // 全局变量
         let currentUser = null;
         let allCharacters = [];
+        let currentPage = 1;
+        const pageSize = 10;
 
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
@@ -333,6 +350,7 @@
                             throw new Error(error.error || '修改角色失败');
                         }
                         showAlert('角色信息修改成功', 'success');
+                        console.log('角色信息修改成功，重新加载角色列表');
                         var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
                         modal.hide();
                         loadUserCharacters();
@@ -354,6 +372,60 @@
             `;
             alertContainer.appendChild(alert);
             setTimeout(() => alert.remove(), 3000);
+        }
+
+        function showCharacterListModal() {
+            const modal = new bootstrap.Modal(document.getElementById('characterListModal'));
+            modal.show();
+            loadUserCharacters();
+        }
+
+        function renderCharacterList(characters) {
+            const characterList = document.getElementById('characterList');
+            if (characters.length === 0) {
+                characterList.innerHTML = '<p class="text-center">暂无角色</p>';
+                return;
+            }
+
+            const totalPages = Math.ceil(characters.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, characters.length);
+            const pageData = characters.slice(startIndex, endIndex);
+
+            let html = '';
+            pageData.forEach(char => {
+                const character = allCharacters.find(c => c.character_id === char.character_id);
+                if (character) {
+                    html += `
+                        <div class="character-item">
+                            <h5>${character.name}</h5>
+                            <p>星魂等级：${char.star_soul}</p>
+                            <p>角色等级：${char.level}</p>
+                            <p>好感度：${char.favor}</p>
+                            <p>战力：${char.power}</p>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCharacter(${char.character_id})">删除</button>
+                            <button class="btn btn-secondary btn-sm ms-2" onclick="showEditModal(${char.character_id}, ${char.star_soul}, ${char.level}, ${char.favor})">修改</button>
+                        </div>
+                    `;
+                }
+            });
+            characterList.innerHTML = html;
+            updatePagination(totalPages);
+        }
+
+        function updatePagination(totalPages) {
+            document.getElementById('pageInfo').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allCharacters.length / pageSize);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                loadUserCharacters();
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
