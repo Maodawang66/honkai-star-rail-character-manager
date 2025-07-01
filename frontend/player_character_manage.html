@@ -51,29 +51,27 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="characterSelect">选择角色</label>
-                                <select class="form-select" id="characterSelect" required>
-                                    <option value="">请选择角色</option>
-                                </select>
+                                <label for="characterName">角色名称</label>
+                                <input type="text" class="form-control" id="characterName" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="starSoul">星魂等级 (0-6)</label>
-                                <input type="number" class="form-control" id="starSoul" min="0" max="6" value="0" required>
+                                <label for="level">角色等级</label>
+                                <input type="number" class="form-control" id="level" min="1" max="80" value="1" required>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="level">角色等级 (1-80)</label>
-                                <input type="number" class="form-control" id="level" min="1" max="80" value="1" required>
+                                <label for="starSoul">星魂等级</label>
+                                <input type="number" class="form-control" id="starSoul" min="0" max="6" value="0" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="favor">好感度 (0-10)</label>
+                                <label for="favor">好感度</label>
                                 <input type="number" class="form-control" id="favor" min="0" max="10" value="5" required>
                             </div>
                         </div>
@@ -112,6 +110,36 @@
             </div>
         </div>
 
+        <!-- 编辑角色弹窗 -->
+        <div class="modal fade" id="editCharacterModal" tabindex="-1" aria-labelledby="editCharacterModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCharacterModalLabel">编辑角色</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editCharacterForm">
+                            <input type="hidden" id="editCharacterId">
+                            <div class="form-group">
+                                <label for="editLevel">角色等级</label>
+                                <input type="number" class="form-control" id="editLevel" min="1" max="80" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editStarSoul">星魂等级</label>
+                                <input type="number" class="form-control" id="editStarSoul" min="0" max="6" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editFavor">好感度</label>
+                                <input type="number" class="form-control" id="editFavor" min="0" max="10" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">保存修改</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 提示信息 -->
         <div id="alertContainer"></div>
     </div>
@@ -143,7 +171,6 @@
                 }, 2000);
                 return;
             }
-            // 兼容player_data_query.html的数据结构
             let parsedData = JSON.parse(userData);
             let userObj = parsedData.user || parsedData;
             currentUser = userObj;
@@ -159,12 +186,6 @@
                 const response = await fetch('http://localhost:5000/api/characters');
                 if (!response.ok) throw new Error('获取角色列表失败');
                 allCharacters = await response.json();
-                
-                const select = document.getElementById('characterSelect');
-                select.innerHTML = '<option value="">请选择角色</option>';
-                allCharacters.forEach(char => {
-                    select.innerHTML += `<option value="${char.character_id}">${char.name}</option>`;
-                });
             } catch (error) {
                 showAlert(error.message, 'danger');
             }
@@ -175,7 +196,7 @@
             if (!currentUser) return;
             
             const loading = document.querySelector('.loading');
-            loading.style.display = 'block';
+            if (loading) loading.style.display = 'block';
             
             try {
                 const response = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}`);
@@ -198,34 +219,106 @@
                                 <p>星魂等级：${char.star_soul}</p>
                                 <p>角色等级：${char.level}</p>
                                 <p>好感度：${char.favor}</p>
-                                <p>战力：${char.power}</p>
-                                <button class="btn btn-danger btn-sm" onclick="deleteCharacter(${char.character_id})">删除</button>
-                                <button class="btn btn-secondary btn-sm ms-2" onclick="showEditModal(${char.character_id}, ${char.star_soul}, ${char.level}, ${char.favor})">修改</button>
+                                <button class="btn btn-sm btn-warning" onclick="showEditCharacterModal(${char.character_id}, ${char.level}, ${char.star_soul}, ${char.favor})">编辑</button>
                             </div>
                         `;
                     }
                 });
-                characterList.innerHTML = html + getEditModalHtml();
+                characterList.innerHTML = html;
+                updatePagination(characters.length);
             } catch (error) {
                 showAlert(error.message, 'danger');
             } finally {
-                loading.style.display = 'none';
+                if (loading) loading.style.display = 'none';
             }
         }
+
+        // 更新分页信息
+        function updatePagination(totalCharacters) {
+            const totalPages = Math.ceil(totalCharacters / pageSize);
+            document.getElementById('pageInfo').textContent = `第 ${currentPage} 页，共 ${totalPages} 页`;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        // 切换页面
+        function changePage(direction) {
+            currentPage += direction;
+            loadUserCharacters();
+        }
+
+        // 显示角色列表弹窗
+        function showCharacterListModal() {
+            const modal = new bootstrap.Modal(document.getElementById('characterListModal'));
+            modal.show();
+        }
+
+        // 显示编辑角色弹窗
+        function showEditCharacterModal(characterId, level, starSoul, favor) {
+            document.getElementById('editCharacterId').value = characterId;
+            document.getElementById('editLevel').value = level;
+            document.getElementById('editStarSoul').value = starSoul;
+            document.getElementById('editFavor').value = favor;
+            const modal = new bootstrap.Modal(document.getElementById('editCharacterModal'));
+            modal.show();
+        }
+
+        // 显示提示信息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        // 编辑角色信息
+        document.getElementById('editCharacterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const characterId = document.getElementById('editCharacterId').value;
+            const level = parseInt(document.getElementById('editLevel').value);
+            const starSoul = parseInt(document.getElementById('editStarSoul').value);
+            const favor = parseInt(document.getElementById('editFavor').value);
+            const power = Math.floor(level * 1.25 * (1 + starSoul * 0.15));
+
+            try {
+                const response = await fetch('http://localhost:5000/api/user_characters', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.user_id,
+                        character_id: characterId,
+                        star_soul: starSoul,
+                        level: level,
+                        favor: favor,
+                        power: power
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '修改角色失败');
+                }
+
+                showAlert('角色信息修改成功', 'success');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editCharacterModal'));
+                modal.hide();
+                loadUserCharacters();
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        });
 
         // 添加角色
         document.getElementById('addCharacterForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const characterId = document.getElementById('characterSelect').value;
-            const starSoul = document.getElementById('starSoul').value;
-            const level = document.getElementById('level').value;
-            const favor = document.getElementById('favor').value;
-            
-            if (!characterId) {
-                showAlert('请选择角色', 'warning');
-                return;
-            }
+            const name = document.getElementById('characterName').value;
+            const level = parseInt(document.getElementById('level').value);
+            const starSoul = parseInt(document.getElementById('starSoul').value);
+            const favor = parseInt(document.getElementById('favor').value);
+            const power = Math.floor(level * 1.25 * (1 + starSoul * 0.15));
 
             try {
                 const response = await fetch('http://localhost:5000/api/user_characters', {
@@ -235,11 +328,11 @@
                     },
                     body: JSON.stringify({
                         user_id: currentUser.user_id,
-                        character_id: parseInt(characterId),
-                        star_soul: parseInt(starSoul),
-                        level: parseInt(level),
-                        favor: parseInt(favor),
-                        join_time: new Date().toISOString()
+                        character_id: allCharacters.find(c => c.name === name).character_id,
+                        star_soul: starSoul,
+                        level: level,
+                        favor: favor,
+                        power: power
                     })
                 });
 
@@ -249,184 +342,12 @@
                 }
 
                 showAlert('添加角色成功', 'success');
-                // 重置表单
                 this.reset();
-                // 重新加载角色列表
                 loadUserCharacters();
             } catch (error) {
                 showAlert(error.message, 'danger');
             }
         });
-
-        // 删除角色
-        async function deleteCharacter(characterId) {
-            if (!confirm('确定要删除这个角色吗？')) return;
-
-            try {
-                const response = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}/${characterId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || '删除角色失败');
-                }
-
-                showAlert('删除角色成功', 'success');
-                // 重新加载角色列表
-                loadUserCharacters();
-            } catch (error) {
-                showAlert(error.message, 'danger');
-            }
-        }
-
-        // 编辑模态框HTML
-        function getEditModalHtml() {
-            return `
-            <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">修改角色信息</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form id="editCharacterForm">
-                      <input type="hidden" id="editCharacterId">
-                      <div class="mb-3">
-                        <label for="editStarSoul" class="form-label">星魂等级 (0-6)</label>
-                        <input type="number" class="form-control" id="editStarSoul" min="0" max="6" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="editLevel" class="form-label">角色等级 (1-80)</label>
-                        <input type="number" class="form-control" id="editLevel" min="1" max="80" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="editFavor" class="form-label">好感度 (0-10)</label>
-                        <input type="number" class="form-control" id="editFavor" min="0" max="10" required>
-                      </div>
-                      <button type="submit" class="btn btn-primary">保存修改</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // 显示编辑模态框
-        window.showEditModal = function(characterId, starSoul, level, favor) {
-            document.getElementById('editCharacterId').value = characterId;
-            document.getElementById('editStarSoul').value = starSoul;
-            document.getElementById('editLevel').value = level;
-            document.getElementById('editFavor').value = favor;
-            var modal = new bootstrap.Modal(document.getElementById('editModal'));
-            modal.show();
-        }
-
-        // 编辑角色表单提交
-        document.addEventListener('DOMContentLoaded', function() {
-            const editForm = document.getElementById('editCharacterForm');
-            if (editForm) {
-                editForm.onsubmit = async function(e) {
-                    e.preventDefault();
-                    const characterId = document.getElementById('editCharacterId').value;
-                    const starSoul = document.getElementById('editStarSoul').value;
-                    const level = document.getElementById('editLevel').value;
-                    const favor = document.getElementById('editFavor').value;
-                    try {
-                        const response = await fetch('http://localhost:5000/api/user_characters', {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                user_id: currentUser.user_id,
-                                character_id: parseInt(characterId),
-                                star_soul: parseInt(starSoul),
-                                level: parseInt(level),
-                                favor: parseInt(favor)
-                            })
-                        });
-                        if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.error || '修改角色失败');
-                        }
-                        showAlert('角色信息修改成功', 'success');
-                        console.log('角色信息修改成功，重新加载角色列表');
-                        var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-                        modal.hide();
-                        loadUserCharacters();
-                    } catch (error) {
-                        showAlert(error.message, 'danger');
-                    }
-                }
-            }
-        });
-
-        // 显示提示信息
-        function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            alertContainer.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
-        }
-
-        function showCharacterListModal() {
-            const modal = new bootstrap.Modal(document.getElementById('characterListModal'));
-            modal.show();
-            loadUserCharacters();
-        }
-
-        function renderCharacterList(characters) {
-            const characterList = document.getElementById('characterList');
-            if (characters.length === 0) {
-                characterList.innerHTML = '<p class="text-center">暂无角色</p>';
-                return;
-            }
-
-            const totalPages = Math.ceil(characters.length / pageSize);
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, characters.length);
-            const pageData = characters.slice(startIndex, endIndex);
-
-            let html = '';
-            pageData.forEach(char => {
-                const character = allCharacters.find(c => c.character_id === char.character_id);
-                if (character) {
-                    html += `
-                        <div class="character-item">
-                            <h5>${character.name}</h5>
-                            <p>星魂等级：${char.star_soul}</p>
-                            <p>角色等级：${char.level}</p>
-                            <p>好感度：${char.favor}</p>
-                            <p>战力：${char.power}</p>
-                            <button class="btn btn-danger btn-sm" onclick="deleteCharacter(${char.character_id})">删除</button>
-                            <button class="btn btn-secondary btn-sm ms-2" onclick="showEditModal(${char.character_id}, ${char.star_soul}, ${char.level}, ${char.favor})">修改</button>
-                        </div>
-                    `;
-                }
-            });
-            characterList.innerHTML = html;
-            updatePagination(totalPages);
-        }
-
-        function updatePagination(totalPages) {
-            document.getElementById('pageInfo').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
-            document.getElementById('prevPage').disabled = currentPage <= 1;
-            document.getElementById('nextPage').disabled = currentPage >= totalPages;
-        }
-
-        function changePage(direction) {
-            const totalPages = Math.ceil(allCharacters.length / pageSize);
-            const newPage = currentPage + direction;
-            if (newPage >= 1 && newPage <= totalPages) {
-                currentPage = newPage;
-                loadUserCharacters();
-            }
-        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
