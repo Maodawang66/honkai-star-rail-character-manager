@@ -489,12 +489,28 @@
                 return;
             }
             
+            if (!currentUser) {
+                currentUser = getCurrentUser();
+                if (!currentUser) {
+                    alert('用户未登录');
+                    return;
+                }
+            }
+            
             try {
                 const response = await fetch(`http://localhost:5000/api/characters/detail/${encodeURIComponent(name)}`);
                 const data = await response.json();
                 
                 if (response.ok) {
-                    await displayCharacterResults([data]);
+                    // 获取用户拥有的角色ID列表
+                    const ownedResponse = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}`);
+                    const ownedData = await ownedResponse.json();
+                    let ownedCharacterIds = [];
+                    if (ownedResponse.ok) {
+                        ownedCharacterIds = ownedData.map(char => char.character_id);
+                    }
+                    
+                    await displayCharacterResults([data], ownedCharacterIds);
                 } else {
                     alert(data.error || '查询失败');
                 }
@@ -504,12 +520,27 @@
         }
 
         async function queryAllCharacters() {
+            if (!currentUser) {
+                currentUser = getCurrentUser();
+                if (!currentUser) {
+                    alert('用户未登录');
+                    return;
+                }
+            }
             try {
                 const response = await fetch('http://localhost:5000/api/characters/detail');
                 const data = await response.json();
                 
                 if (response.ok) {
-                    await displayCharacterResults(data);
+                    // 获取用户拥有的角色ID列表
+                    const ownedResponse = await fetch(`http://localhost:5000/api/user_characters/${currentUser.user_id}`);
+                    const ownedData = await ownedResponse.json();
+                    let ownedCharacterIds = [];
+                    if (ownedResponse.ok) {
+                        ownedCharacterIds = ownedData.map(char => char.character_id);
+                    }
+                    
+                    await displayCharacterResults(data, ownedCharacterIds);
                 } else {
                     alert(data.error || '查询失败');
                 }
@@ -518,12 +549,10 @@
             }
         }
 
-        async function displayCharacterResults(characters) {
+        async function displayCharacterResults(characters, ownedCharacterIds) {
             const modal = document.getElementById('power-ranking-modal');
             const content = document.getElementById('ranking-content');
             document.getElementById('modal-title').textContent = '角色查询结果';
-            
-            let ownedCharacterIds = []; // 初始化ownedCharacterIds
             
             if (characters.length === 0) {
                 content.innerHTML = '<p>未找到角色数据</p>';
