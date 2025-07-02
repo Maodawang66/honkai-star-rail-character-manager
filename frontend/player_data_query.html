@@ -444,11 +444,6 @@
             </div>
             <div class="modal-body">
                 <div id="ranking-content"></div>
-                <div class="pagination">
-                    <button id="prev-page" onclick="changePage(-1)" disabled>上一页</button>
-                    <span id="page-info">第 1 页</span>
-                    <button id="next-page" onclick="changePage(1)">下一页</button>
-                </div>
             </div>
         </div>
     </div>
@@ -533,61 +528,29 @@
             if (characters.length === 0) {
                 content.innerHTML = '<p>未找到角色数据</p>';
             } else {
-                const pageSize = 10;
-                const totalPages = Math.ceil(characters.length / pageSize);
-                let currentPage = 1;
-
-                function renderPage(page) {
-                    const startIndex = (page - 1) * pageSize;
-                    const endIndex = Math.min(startIndex + pageSize, characters.length);
-                    const pageData = characters.slice(startIndex, endIndex);
-                    content.innerHTML = pageData.map(char => {
-                        const isOwned = ownedCharacterIds.includes(char.character_id);
-                        const ownershipStatus = isOwned 
-                            ? '<span class="ownership-status owned">已拥有</span>'
-                            : '<span class="ownership-status not-owned">未拥有</span>';
-                        return `
-                            <div class="result-item">
-                                <h4>${char.name} ${ownershipStatus}</h4>
-                                <p><strong>简介：</strong>${char.description || '无'}</p>
-                                <p><strong>技能：</strong>${char.skill || '无'}</p>
-                                <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
-                                <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
-                                <p><strong>命途：</strong>${char.fate_name || '无'}</p>
-                                <div class="tags">
-                                    <strong>标签：</strong>
-                                    ${char.tags && char.tags.length > 0 ? 
-                                        char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                        '<span>无</span>'
-                                    }
-                                </div>
+                content.innerHTML = characters.map(char => {
+                    const isOwned = ownedCharacterIds.includes(char.character_id);
+                    const ownershipStatus = isOwned 
+                        ? '<span class="ownership-status owned">已拥有</span>'
+                        : '<span class="ownership-status not-owned">未拥有</span>';
+                    return `
+                        <div class="result-item">
+                            <h4>${char.name} ${ownershipStatus}</h4>
+                            <p><strong>简介：</strong>${char.description || '无'}</p>
+                            <p><strong>技能：</strong>${char.skill || '无'}</p>
+                            <p><strong>阵营：</strong>${char.camp_name || '无'}</p>
+                            <p><strong>属性：</strong>${char.attribute_name || '无'}</p>
+                            <p><strong>命途：</strong>${char.fate_name || '无'}</p>
+                            <div class="tags">
+                                <strong>标签：</strong>
+                                ${char.tags && char.tags.length > 0 ? 
+                                    char.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                    '<span>无</span>'
+                                }
                             </div>
-                        `;
-                    }).join('');
-                    updatePagination(page, totalPages);
-                }
-
-                function updatePagination(page, totalPages) {
-                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
-                    document.getElementById('prev-page').disabled = page <= 1;
-                    document.getElementById('next-page').disabled = page >= totalPages;
-                }
-
-                document.getElementById('prev-page').onclick = function() {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        renderPage(currentPage);
-                    }
-                };
-
-                document.getElementById('next-page').onclick = function() {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        renderPage(currentPage);
-                    }
-                };
-
-                renderPage(currentPage);
+                        </div>
+                    `;
+                }).join('');
             }
             
             modal.style.display = 'block';
@@ -638,53 +601,21 @@
             if (bosses.length === 0) {
                 content.innerHTML = '<p>未找到BOSS数据</p>';
             } else {
-                const pageSize = 10;
-                const totalPages = Math.ceil(bosses.length / pageSize);
-                let currentPage = 1;
-
-                function renderPage(page) {
-                    const startIndex = (page - 1) * pageSize;
-                    const endIndex = Math.min(startIndex + pageSize, bosses.length);
-                    const pageData = bosses.slice(startIndex, endIndex);
-                    content.innerHTML = pageData.map(boss => `
-                        <div class="result-item">
-                            <h4>${boss.name}</h4>
-                            <p><strong>简介：</strong>${boss.description || '无'}</p>
-                            <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
-                            <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
-                            <div class="tags">
-                                <strong>标签：</strong>
-                                ${boss.tags && boss.tags.length > 0 ? 
-                                    boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                    '<span>无</span>'
-                                }
-                            </div>
+                content.innerHTML = bosses.map(boss => `
+                    <div class="result-item">
+                        <h4>${boss.name}</h4>
+                        <p><strong>简介：</strong>${boss.description || '无'}</p>
+                        <p><strong>阵营：</strong>${boss.camp_name || '无'}</p>
+                        <p><strong>弱点属性：</strong>${boss.weakness_name || '无'}</p>
+                        <div class="tags">
+                            <strong>标签：</strong>
+                            ${boss.tags && boss.tags.length > 0 ? 
+                                boss.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                '<span>无</span>'
+                            }
                         </div>
-                    `).join('');
-                    updatePagination(page, totalPages);
-                }
-
-                function updatePagination(page, totalPages) {
-                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
-                    document.getElementById('prev-page').disabled = page <= 1;
-                    document.getElementById('next-page').disabled = page >= totalPages;
-                }
-
-                document.getElementById('prev-page').onclick = function() {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        renderPage(currentPage);
-                    }
-                };
-
-                document.getElementById('next-page').onclick = function() {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        renderPage(currentPage);
-                    }
-                };
-
-                renderPage(currentPage);
+                    </div>
+                `).join('');
             }
             
             modal.style.display = 'block';
@@ -735,51 +666,19 @@
             if (environments.length === 0) {
                 content.innerHTML = '<p>未找到环境数据</p>';
             } else {
-                const pageSize = 10;
-                const totalPages = Math.ceil(environments.length / pageSize);
-                let currentPage = 1;
-
-                function renderPage(page) {
-                    const startIndex = (page - 1) * pageSize;
-                    const endIndex = Math.min(startIndex + pageSize, environments.length);
-                    const pageData = environments.slice(startIndex, endIndex);
-                    content.innerHTML = pageData.map(env => `
-                        <div class="result-item">
-                            <h4>${env.name}</h4>
-                            <p><strong>buff效果：</strong>${env.buff || '无'}</p>
-                            <div class="tags">
-                                <strong>标签：</strong>
-                                ${env.tags && env.tags.length > 0 ? 
-                                    env.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
-                                    '<span>无</span>'
-                                }
-                            </div>
+                content.innerHTML = environments.map(env => `
+                    <div class="result-item">
+                        <h4>${env.name}</h4>
+                        <p><strong>buff效果：</strong>${env.buff || '无'}</p>
+                        <div class="tags">
+                            <strong>标签：</strong>
+                            ${env.tags && env.tags.length > 0 ? 
+                                env.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                '<span>无</span>'
+                            }
                         </div>
-                    `).join('');
-                    updatePagination(page, totalPages);
-                }
-
-                function updatePagination(page, totalPages) {
-                    document.getElementById('page-info').textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
-                    document.getElementById('prev-page').disabled = page <= 1;
-                    document.getElementById('next-page').disabled = page >= totalPages;
-                }
-
-                document.getElementById('prev-page').onclick = function() {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        renderPage(currentPage);
-                    }
-                };
-
-                document.getElementById('next-page').onclick = function() {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        renderPage(currentPage);
-                    }
-                };
-
-                renderPage(currentPage);
+                    </div>
+                `).join('');
             }
             
             modal.style.display = 'block';
@@ -838,14 +737,9 @@
             
             if (currentRankingData.length === 0) {
                 content.innerHTML = '<p>暂无排行数据</p>';
-                updatePagination();
                 modal.style.display = 'block';
                 return;
             }
-            
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, currentRankingData.length);
-            const pageData = currentRankingData.slice(startIndex, endIndex);
             
             let tableHTML = `
                 <table class="ranking-table">
@@ -860,8 +754,8 @@
                     <tbody>
             `;
             
-            pageData.forEach((item, index) => {
-                const rank = startIndex + index + 1;
+            currentRankingData.forEach((item, index) => {
+                const rank = index + 1;
                 let rankClass = 'rank-number';
                 if (rank === 1) rankClass += ' rank-gold';
                 else if (rank === 2) rankClass += ' rank-silver';
@@ -880,25 +774,15 @@
             tableHTML += '</tbody></table>';
             content.innerHTML = tableHTML;
             
-            updatePagination();
             modal.style.display = 'block';
         }
 
         function updatePagination() {
-            const totalPages = Math.ceil(currentRankingData.length / pageSize);
-            document.getElementById('page-info').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
-            document.getElementById('prev-page').disabled = currentPage <= 1;
-            document.getElementById('next-page').disabled = currentPage >= totalPages;
+            // 移除分页功能
         }
 
         function changePage(direction) {
-            const totalPages = Math.ceil(currentRankingData.length / pageSize);
-            const newPage = currentPage + direction;
-            
-            if (newPage >= 1 && newPage <= totalPages) {
-                currentPage = newPage;
-                displayRankingModal();
-            }
+            // 移除分页功能
         }
 
         function closePowerRankingModal() {
